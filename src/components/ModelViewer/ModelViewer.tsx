@@ -27,7 +27,7 @@ const ModelViewer: React.FC = () => {
   React.useEffect(() => {
     const { scene } = gltf;
     scene.position.set(0, 0, 0);
-    scene.rotation.set(0.2, -2.4, 0);
+    scene.rotation.set(0, 0, 0);
     gltf.scene.traverse((obj: THREE.Object3D) => {
       if ((obj as THREE.Mesh).isMesh && (obj as THREE.Mesh).material) {
         const material = (obj as THREE.Mesh).material;
@@ -51,6 +51,10 @@ const ModelViewer: React.FC = () => {
   return (
     <Canvas camera={{ position: [0, 0, 4] }}>
       <primitive object={gltf.scene} scale={[1, 1, 1]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+        <circleGeometry args={[3, 64]} />
+        <meshStandardMaterial color="black" />
+      </mesh>
       <SetEnvironment />
       <OrbitControls />
     </Canvas>
