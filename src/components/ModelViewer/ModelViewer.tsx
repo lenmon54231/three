@@ -49,8 +49,8 @@ const ModelViewer: React.FC = () => {
   }, [gltf]);
 
   return (
-    <Canvas camera={{ position: [0, 0, 2] }}>
-      <primitive object={gltf.scene} scale={[0.5, 0.5, 0.5]} />
+    <Canvas camera={{ position: [0, 0, 4] }}>
+      <primitive object={gltf.scene} scale={[1, 1, 1]} />
       <SetEnvironment />
       <OrbitControls />
     </Canvas>
