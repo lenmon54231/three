@@ -1,7 +1,7 @@
-import {useState,useRef} from "react"
-import {Canvas, useFrame} from "@react-three/fiber"
-import { useSpring, animated } from "@react-spring/three"
-import "./app.css"
+import { animated, useSpring } from "@react-spring/three";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useRef, useState } from "react";
+import "./app.css";
 
 
 
