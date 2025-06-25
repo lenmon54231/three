@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {useState,useRef} from "react"
+import {Canvas, useFrame} from "@react-three/fiber"
+import { useSpring, animated } from "@react-spring/three"
+import "./app.css"
 
-function App() {
-  const [count, setCount] = useState(0)
+
+
+function Cube(props) {
+  // Use useRef hook to access the mesh element
+  const mesh = useRef();
+
+  // State values for hover and active state
+  const [hovered, setHover] = useState(false);
+  const [active, setActive] = useState(false);
+
+  //Basic animation to rotate our cube using animation frame
+  useFrame(() => (mesh.current.rotation.x += 0.01));
+
+  //Spring animation hook that scales size based on active state
+  const { scale } = useSpring({ scale: active ? 1.5 : 1 });
+
+  // Jsx to render our 3d cube. Our cube will have height
+  // width and depth equal 2 units.
+  // You also need a material so that you can add color
+  // and show shadows. We are using the standard
+  // material <<meshStandardMaterial />
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <animated.mesh
+      ref={mesh}
+      onPointerOver={(event) => setHover(true)}
+      onPointerOut={(event) => setHover(false)}
+      onClick={(event) => setActive(!active)}
+      scale={scale}
+    >
+      <boxGeometry args={[2, 2, 2]} />
+      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
+    </animated.mesh>
+  );
 }
 
-export default App
+function App() {
+  return (
+    <Canvas>
+      <ambientLight />
+      <pointLight position={[10, 10, 10]} />
+      <Cube />
+    </Canvas>
+  );
+}
+
+export default App;

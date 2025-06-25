@@ -1,0 +1,55 @@
+{
+  "stylelint.validate": ["css", "scss", "less", "vue"],
+  "scss.validate": false,
+  "less.validate": false,
+  "css.validate": false,
+  "stylelint.snippet": ["css", "less", "postcss", "scss", "vue"],
+  "eslint.lintTask.enable": true,
+
+  // Disable the default formatter, use eslint instead
+  "prettier.enable": false,
+  "editor.formatOnSave": false,
+  // Enable the ESlint flat config support
+  "eslint.useFlatConfig": true,
+  // Auto fix
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit",
+    "source.organizeImports": "never"
+  },
+  // Enable eslint for all supported languages
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "vue",
+    "html",
+    "markdown",
+    "json",
+    "jsonc",
+    "yaml",
+    "toml",
+    "gql",
+    "graphql"
+  ],
+
+  "cSpell.words": [
+    "antfu",
+    "composables",
+    "echarts",
+    "iconify",
+    "metalness",
+    "nprogress",
+    "pinia",
+    "raycaster",
+    "screenfull",
+    "sider",
+    "stylelint",
+    "unocss",
+    "unplugin",
+    "Vite",
+    "vueuse",
+    "wangeditor"
+  ]
+}
