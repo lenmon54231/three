@@ -49,14 +49,18 @@ const ModelViewer: React.FC = () => {
   }, [gltf]);
 
   return (
-    <Canvas camera={{ position: [0, 0, 4] }}>
+    <Canvas camera={{ position: [3, 3, 3], fov: 50 }}>
       <primitive object={gltf.scene} scale={[1, 1, 1]} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <circleGeometry args={[3, 64]} />
         <meshStandardMaterial color="black" />
       </mesh>
       <SetEnvironment />
-      <OrbitControls />
+      <OrbitControls
+        target={[0, 0, 0]}
+        minPolarAngle={Math.PI / 6}
+        maxPolarAngle={Math.PI / 3}
+      />
     </Canvas>
   );
 };
