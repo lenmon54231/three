@@ -21,7 +21,7 @@ const SetEnvironment: React.FC = () => {
 };
 
 const ModelViewer: React.FC = () => {
-  const gltf = useLoader(GLTFLoader, '/su7.glb');
+  const gltf = useLoader(GLTFLoader, '/su7_z.glb');
 
   // 设置所有支持 envMapIntensity 的材质
   React.useEffect(() => {
@@ -51,13 +51,21 @@ const ModelViewer: React.FC = () => {
   return (
     <Canvas camera={{ position: [3, 3, 3], fov: 50 }}>
       <primitive object={gltf.scene} scale={[1, 1, 1]} />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <circleGeometry args={[3, 64]} />
+      {/* 汽车展台底座：黑色圆柱体 */}
+      <mesh position={[0, -0.2, 0]} receiveShadow>
+        <cylinderGeometry args={[3, 3, 0.4, 64]} />
         <meshStandardMaterial color="black" />
       </mesh>
       <SetEnvironment />
+      {/* 球型展厅空间：大球体，内表面为黑色 */}
+      <mesh>
+        <sphereGeometry args={[10, 64, 64]} />
+        <meshStandardMaterial color="black" side={THREE.BackSide} />
+      </mesh>
       <OrbitControls
         target={[0, 0, 0]}
+        minDistance={3}
+        maxDistance={8}
         minPolarAngle={Math.PI / 6}
         maxPolarAngle={Math.PI / 3}
       />
