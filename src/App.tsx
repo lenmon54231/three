@@ -1,12 +1,11 @@
 import React from 'react';
-import ModelViewer from './components/ModelViewer/ModelViewer';
+import { BrowserRouter } from 'react-router-dom';
+import AppRoutes from './routes';
 
-const App: React.FC = () => {
-  return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <ModelViewer />
-    </div>
-  );
-};
+const App: React.FC = () => (
+  <BrowserRouter>
+    <AppRoutes />
+  </BrowserRouter>
+);
 
 export default App;
