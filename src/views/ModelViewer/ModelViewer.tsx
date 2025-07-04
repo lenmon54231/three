@@ -1,6 +1,6 @@
 import BackButton from '@/components/BackButton/BackButton';
 import Loading from '@/components/Loading/Loading';
-import { OrbitControls } from '@react-three/drei';
+import { MeshReflectorMaterial, OrbitControls } from '@react-three/drei';
 import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
@@ -54,10 +54,21 @@ const ModelContent: React.FC = () => {
   return (
     <>
       <primitive object={gltf.scene} scale={[1, 1, 1]} />
-      {/* 汽车展台底座：黑色圆柱体 */}
-      <mesh position={[0, -0.2, 0]} receiveShadow>
-        <cylinderGeometry args={[3, 3, 0.4, 64]} />
-        <meshStandardMaterial color="black" />
+      {/* 镜面反射圆形底座 */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+        <circleGeometry args={[4, 64]} />
+        <MeshReflectorMaterial
+          blur={[16, 4]}
+          resolution={1024}
+          mixBlur={0.5}
+          mixStrength={1}
+          roughness={0.05}
+          depthScale={1.2}
+          minDepthThreshold={0.8}
+          maxDepthThreshold={1.2}
+          color="#fff"
+          metalness={0.3}
+        />
       </mesh>
       <SetEnvironment />
       {/* 球型展厅空间：大球体，内表面为黑色 */}
@@ -74,7 +85,7 @@ const ModelViewer: React.FC = () => {
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <BackButton />
       <Suspense fallback={<Loading />}>
-        <Canvas camera={{ position: [3, 3, 3], fov: 50 }}>
+        <Canvas camera={{ position: [3, 3, 3], fov: 50 }} dpr={[1, 1.5]}>
           <ModelContent />
           <OrbitControls
             target={[0, 0, 0]}
