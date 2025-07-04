@@ -1,9 +1,10 @@
 import { OrbitControls } from '@react-three/drei';
 import { Canvas, useLoader, useThree } from '@react-three/fiber';
-import React from 'react';
+import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+import Loading from './Loading';
 
 const SetEnvironment: React.FC = () => {
   const envMap = useLoader(
@@ -20,7 +21,7 @@ const SetEnvironment: React.FC = () => {
   return null;
 };
 
-const ModelViewer: React.FC = () => {
+const ModelContent: React.FC = () => {
   const gltf = useLoader(GLTFLoader, '/su7_z.glb');
 
   // 设置所有支持 envMapIntensity 的材质
@@ -49,7 +50,7 @@ const ModelViewer: React.FC = () => {
   }, [gltf]);
 
   return (
-    <Canvas camera={{ position: [3, 3, 3], fov: 50 }}>
+    <>
       <primitive object={gltf.scene} scale={[1, 1, 1]} />
       {/* 汽车展台底座：黑色圆柱体 */}
       <mesh position={[0, -0.2, 0]} receiveShadow>
@@ -62,15 +63,25 @@ const ModelViewer: React.FC = () => {
         <sphereGeometry args={[10, 64, 64]} />
         <meshStandardMaterial color="black" side={THREE.BackSide} />
       </mesh>
-      <OrbitControls
-        target={[0, 0, 0]}
-        minDistance={3}
-        maxDistance={8}
-        minPolarAngle={Math.PI / 6}
-        maxPolarAngle={Math.PI / 3}
-      />
-    </Canvas>
+    </>
   );
 };
+
+const ModelViewer: React.FC = () => (
+  <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+    <Suspense fallback={<Loading />}>
+      <Canvas camera={{ position: [3, 3, 3], fov: 50 }}>
+        <ModelContent />
+        <OrbitControls
+          target={[0, 0, 0]}
+          minDistance={3}
+          maxDistance={8}
+          minPolarAngle={Math.PI / 6}
+          maxPolarAngle={Math.PI / 3}
+        />
+      </Canvas>
+    </Suspense>
+  </div>
+);
 
 export default ModelViewer;
