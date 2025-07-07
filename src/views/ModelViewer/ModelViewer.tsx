@@ -16,7 +16,7 @@ const SetEnvironment: React.FC = () => {
   const { scene } = useThree();
   React.useEffect(() => {
     envMap.mapping = THREE.EquirectangularReflectionMapping;
-    scene.environment = envMap;
+    // scene.environment = envMap;
     // scene.background = envMap;
   }, [envMap, scene]);
   return null;
@@ -85,7 +85,58 @@ const ModelViewer: React.FC = () => {
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <BackButton />
       <Suspense fallback={<Loading />}>
-        <Canvas camera={{ position: [3, 3, 3], fov: 50 }} dpr={[1, 1.5]}>
+        <Canvas
+          camera={{ position: [3, 3, 3], fov: 50 }}
+          dpr={[1, 1.5]}
+          shadows
+        >
+          {/* 环境光，柔和整体氛围 */}
+          <ambientLight intensity={0.5} />
+          {/* 平行光，模拟展厅主灯，带阴影 */}
+          <directionalLight
+            position={[5, 10, 7]}
+            intensity={1.2}
+            castShadow
+            shadow-mapSize-width={1024}
+            shadow-mapSize-height={1024}
+            shadow-bias={-0.0005}
+          />
+          {/* 顶部点光源，模拟聚光灯效果 */}
+          <pointLight
+            position={[0, 6, 0]}
+            intensity={1.5}
+            distance={20}
+            decay={2}
+          />
+          {/* 辅助点光源，从不同角度补光 */}
+          <pointLight
+            position={[5, 2, 5]}
+            intensity={0.8}
+            distance={15}
+            decay={2}
+          />
+          <pointLight
+            position={[-5, 2, 5]}
+            intensity={0.8}
+            distance={15}
+            decay={2}
+          />
+          <pointLight
+            position={[0, 2, -6]}
+            intensity={0.7}
+            distance={15}
+            decay={2}
+          />
+          {/* 顶部大面积矩形光源，模拟展厅大灯 */}
+          <rectAreaLight
+            position={[0, 5.5, 0]}
+            rotation={[-Math.PI / 2, 0, 0]} // 让光源朝下
+            intensity={2}
+            width={6}
+            height={3}
+            color={'#ffffff'}
+            castShadow={false}
+          />
           <ModelContent />
           <OrbitControls
             target={[0, 0, 0]}
