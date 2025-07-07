@@ -6,17 +6,14 @@ import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+import ExhibitionLights from './components/ExhibitionLights';
 
 const SetEnvironment: React.FC = () => {
-  const envMap = useLoader(
-    RGBELoader,
-    // 'https://limengtupian.oss-cn-beijing.aliyuncs.com/a-hdr/golden_gate_hills_1k.hdr'
-    '/studio_small_09_2k.hdr'
-  );
+  const envMap = useLoader(RGBELoader, '/studio_small_08_1k.hdr');
   const { scene } = useThree();
   React.useEffect(() => {
     envMap.mapping = THREE.EquirectangularReflectionMapping;
-    // scene.environment = envMap;
+    scene.environment = envMap;
     // scene.background = envMap;
   }, [envMap, scene]);
   return null;
@@ -37,13 +34,13 @@ const ModelContent: React.FC = () => {
         if (Array.isArray(material)) {
           material.forEach((mat) => {
             if ('envMapIntensity' in mat) {
-              (mat as THREE.MeshStandardMaterial).envMapIntensity = 2;
+              (mat as THREE.MeshStandardMaterial).envMapIntensity = 0.3;
               mat.needsUpdate = true;
             }
           });
         } else {
           if ('envMapIntensity' in material) {
-            (material as THREE.MeshStandardMaterial).envMapIntensity = 2;
+            (material as THREE.MeshStandardMaterial).envMapIntensity = 0.3;
             material.needsUpdate = true;
           }
         }
@@ -90,53 +87,7 @@ const ModelViewer: React.FC = () => {
           dpr={[1, 1.5]}
           shadows
         >
-          {/* 环境光，柔和整体氛围 */}
-          <ambientLight intensity={0.5} />
-          {/* 平行光，模拟展厅主灯，带阴影 */}
-          <directionalLight
-            position={[5, 10, 7]}
-            intensity={1.2}
-            castShadow
-            shadow-mapSize-width={1024}
-            shadow-mapSize-height={1024}
-            shadow-bias={-0.0005}
-          />
-          {/* 顶部点光源，模拟聚光灯效果 */}
-          <pointLight
-            position={[0, 6, 0]}
-            intensity={1.5}
-            distance={20}
-            decay={2}
-          />
-          {/* 辅助点光源，从不同角度补光 */}
-          <pointLight
-            position={[5, 2, 5]}
-            intensity={0.8}
-            distance={15}
-            decay={2}
-          />
-          <pointLight
-            position={[-5, 2, 5]}
-            intensity={0.8}
-            distance={15}
-            decay={2}
-          />
-          <pointLight
-            position={[0, 2, -6]}
-            intensity={0.7}
-            distance={15}
-            decay={2}
-          />
-          {/* 顶部大面积矩形光源，模拟展厅大灯 */}
-          <rectAreaLight
-            position={[0, 5.5, 0]}
-            rotation={[-Math.PI / 2, 0, 0]} // 让光源朝下
-            intensity={2}
-            width={6}
-            height={3}
-            color={'#ffffff'}
-            castShadow={false}
-          />
+          <ExhibitionLights />
           <ModelContent />
           <OrbitControls
             target={[0, 0, 0]}
