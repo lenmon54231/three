@@ -66,7 +66,7 @@ const ModelContent: React.FC = () => {
           depthScale={1.2}
           minDepthThreshold={0.8}
           maxDepthThreshold={1.2}
-          color="#f0f0f0"
+          color="#fff"
           metalness={0.2}
         />
       </mesh>
