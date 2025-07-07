@@ -1,7 +1,7 @@
 import BackButton from '@/components/BackButton/BackButton';
 import Loading from '@/components/Loading/Loading';
 import { MeshReflectorMaterial, OrbitControls } from '@react-three/drei';
-import { Canvas, useLoader, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -21,7 +21,7 @@ const SetEnvironment: React.FC = () => {
 
 const ModelContent: React.FC = () => {
   const gltf = useLoader(GLTFLoader, '/su7_z.glb');
-  // const gltf = useLoader(GLTFLoader, '/oil_can.glb');
+  const groupRef = React.useRef<THREE.Group>(null);
 
   // 设置所有支持 envMapIntensity 的材质
   React.useEffect(() => {
@@ -48,12 +48,21 @@ const ModelContent: React.FC = () => {
     });
   }, [gltf]);
 
+  // 自动旋转
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.08; // 更慢的旋转速度，模拟车展展台
+    }
+  });
+
   return (
     <>
-      <primitive object={gltf.scene} scale={[1, 1, 1]} />
+      <group ref={groupRef}>
+        <primitive object={gltf.scene} scale={[1, 1, 1]} />
+      </group>
       {/* 镜面反射圆形底座 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <circleGeometry args={[4, 64]} />
+        <circleGeometry args={[3.2, 64]} />
         <MeshReflectorMaterial
           blur={[12, 4]}
           resolution={512}
@@ -83,7 +92,7 @@ const ModelViewer: React.FC = () => {
       <BackButton />
       <Suspense fallback={<Loading />}>
         <Canvas
-          camera={{ position: [3, 3, 3], fov: 50 }}
+          camera={{ position: [3, 3, 3], fov: 35 }}
           dpr={[1, 1.5]}
           shadows
         >
