@@ -58,8 +58,8 @@ const ModelContent: React.FC = () => {
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <circleGeometry args={[4, 64]} />
         <MeshReflectorMaterial
-          blur={[24, 8]}
-          resolution={1536}
+          blur={[12, 4]}
+          resolution={512}
           mixBlur={0.5}
           mixStrength={0.8}
           roughness={0.1}
