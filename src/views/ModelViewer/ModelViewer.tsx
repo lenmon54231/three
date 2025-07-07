@@ -1,7 +1,7 @@
 import BackButton from '@/components/BackButton/BackButton';
 import Loading from '@/components/Loading/Loading';
 import { MeshReflectorMaterial, OrbitControls } from '@react-three/drei';
-import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
+import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -48,13 +48,6 @@ const ModelContent: React.FC = () => {
     });
   }, [gltf]);
 
-  // 自动旋转
-  useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.08; // 更慢的旋转速度，模拟车展展台
-    }
-  });
-
   return (
     <>
       <group ref={groupRef}>
@@ -64,7 +57,7 @@ const ModelContent: React.FC = () => {
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <circleGeometry args={[3.2, 64]} />
         <MeshReflectorMaterial
-          blur={[12, 4]}
+          blur={[16, 4]}
           resolution={512}
           mixBlur={0.5}
           mixStrength={0.8}
