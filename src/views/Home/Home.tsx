@@ -6,7 +6,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   return (
     <div className="w-screen h-screen flex flex-col items-center justify-center bg-[#222] text-white">
-      <h1 className="text-4xl mb-10">Three.js </h1>
+      <h1 className="text-4xl mb-10">Three </h1>
       <Button
         className="text-xl px-10 py-4 m-4 rounded-lg border-none bg-indigo-500 text-white cursor-pointer transition hover:bg-indigo-600"
         onClick={() => navigate('/model')}

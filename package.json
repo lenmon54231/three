@@ -7,13 +7,16 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && node deploy",
+    "push": "node d"
   },
   "dependencies": {
     "@react-spring/three": "^10.0.1",
     "@react-three/drei": "^10.3.0",
     "@react-three/fiber": "^9.1.2",
     "@tailwindcss/vite": "^4.1.11",
+    "ora": "^8.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
