@@ -8,6 +8,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import ExhibitionLights from './components/ExhibitionLights';
 import Lightformer from '@/components/Lightformer/Lightformer';
+import ColorButtons from './components/ColorButtons';
 
 const SetEnvironment: React.FC = () => {
   const envMap = useLoader(RGBELoader, '/studio_small_08_1k.hdr');
@@ -38,23 +39,11 @@ const ModelContent: React.FC<{
         const material = (obj as THREE.Mesh).material;
         if (Array.isArray(material)) {
           material.forEach((mat) => {
-            // 输出 mesh 和材质名称
-            console.log('Mesh:', obj.name, 'Material:', mat.name);
-            if ('envMapIntensity' in mat) {
-              (mat as THREE.MeshStandardMaterial).envMapIntensity = 0.3;
-              mat.needsUpdate = true;
-            }
             if (typeof mat.name === 'string' && mat.name.startsWith('Car_')) {
               colorMaterials.current.push(mat as THREE.MeshStandardMaterial);
             }
           });
         } else {
-          // 输出 mesh 和材质名称
-          console.log('Mesh:', obj.name, 'Material:', material.name);
-          if ('envMapIntensity' in material) {
-            (material as THREE.MeshStandardMaterial).envMapIntensity = 0.3;
-            material.needsUpdate = true;
-          }
           if (typeof material.name === 'string' && material.name.startsWith('Car_')) {
             colorMaterials.current.push(material as THREE.MeshStandardMaterial);
           }
@@ -114,72 +103,7 @@ const ModelViewer: React.FC = () => {
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <BackButton />
       {/* 换色按钮 */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 24,
-          right: 24,
-          zIndex: 10,
-          display: 'flex',
-          gap: 8,
-        }}
-      >
-        <button
-          style={{
-            width: 32,
-            height: 32,
-            background: '#ff0000',
-            border: 'none',
-            borderRadius: 16,
-            cursor: 'pointer',
-          }}
-          onClick={() => handleChangeColor('#ff0000')}
-        />
-        <button
-          style={{
-            width: 32,
-            height: 32,
-            background: '#0051ff',
-            border: 'none',
-            borderRadius: 16,
-            cursor: 'pointer',
-          }}
-          onClick={() => handleChangeColor('#0051ff')}
-        />
-        <button
-          style={{
-            width: 32,
-            height: 32,
-            background: '#00c853',
-            border: 'none',
-            borderRadius: 16,
-            cursor: 'pointer',
-          }}
-          onClick={() => handleChangeColor('#00c853')}
-        />
-        <button
-          style={{
-            width: 32,
-            height: 32,
-            background: '#fff',
-            border: '1px solid #ccc',
-            borderRadius: 16,
-            cursor: 'pointer',
-          }}
-          onClick={() => handleChangeColor('#ffffff')}
-        />
-        <button
-          style={{
-            width: 32,
-            height: 32,
-            background: '#222',
-            border: '1px solid #ccc',
-            borderRadius: 16,
-            cursor: 'pointer',
-          }}
-          onClick={() => handleChangeColor('#222222')}
-        />
-      </div>
+      <ColorButtons onChange={handleChangeColor} />
       <Suspense fallback={<Loading />}>
         <Canvas
           camera={{ position: [3, 3, 3], fov: 45 }}
