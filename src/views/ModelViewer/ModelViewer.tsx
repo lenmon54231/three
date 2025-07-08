@@ -1,7 +1,7 @@
 import BackButton from '@/components/BackButton/BackButton';
 import Loading from '@/components/Loading/Loading';
 import { MeshReflectorMaterial, OrbitControls, Sparkles } from '@react-three/drei';
-import { Canvas, useLoader, useThree } from '@react-three/fiber';
+import { Canvas, useLoader, useThree, useFrame } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -25,9 +25,51 @@ const SetEnvironment: React.FC = () => {
   return null;
 };
 
+// 水波纹材质组件（可后续独立成文件）
+const WaterRippleMaterial: React.ForwardRefRenderFunction<THREE.ShaderMaterial, object> = (props, ref) => {
+  const materialRef = React.useRef<THREE.ShaderMaterial>(null);
+  useFrame(({ clock }) => {
+    if (materialRef.current) {
+      (materialRef.current as THREE.ShaderMaterial).uniforms.uTime.value = clock.getElapsedTime();
+    }
+  });
+  return (
+    <shaderMaterial
+      ref={ref || materialRef}
+      attach="material"
+      vertexShader={`
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+        }
+      `}
+      fragmentShader={`
+        varying vec2 vUv;
+        uniform float uTime;
+        void main() {
+          float dist = distance(vUv, vec2(0.5));
+          float ripple = 0.03 * sin(40.0 * dist - uTime * 2.0);
+          float alpha = 0.7 * smoothstep(0.5, 0.45, dist + ripple);
+          gl_FragColor = vec4(0.6, 0.8, 1.0, alpha);
+        }
+      `}
+      uniforms={{ uTime: { value: 0 } }}
+      transparent
+      side={THREE.DoubleSide}
+      depthWrite={false}
+      blending={THREE.AdditiveBlending}
+      {...props}
+    />
+  );
+};
+
+const ForwardedWaterRippleMaterial = React.forwardRef(WaterRippleMaterial);
+
 const ModelContent: React.FC<{
   onMaterialsReady?: (mats: THREE.MeshStandardMaterial[]) => void;
-}> = ({ onMaterialsReady }) => {
+  isTopView?: boolean;
+}> = ({ onMaterialsReady, isTopView }) => {
   const gltf = useLoader(GLTFLoader, modal);
   const groupRef = React.useRef<THREE.Group>(null);
   const colorMaterials = React.useRef<THREE.MeshStandardMaterial[]>([]);
@@ -64,21 +106,25 @@ const ModelContent: React.FC<{
       <group ref={groupRef}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
       </group>
-      {/* 镜面反射圆形底座 */}
+      {/* 镜面反射圆形底座/水波纹底座 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <circleGeometry args={[3.2, 64]} />
-        <MeshReflectorMaterial
-           blur={[2, 1]}
-           resolution={512}
-           mixBlur={0.2}
-           mixStrength={0.5}
-           roughness={0.5}
-           depthScale={0.5}
-           minDepthThreshold={0.9}
-           maxDepthThreshold={1.1}
-           color="#fff"
-           metalness={0.1}
-        />
+        {isTopView ? (
+          <ForwardedWaterRippleMaterial />
+        ) : (
+          <MeshReflectorMaterial
+            blur={[2, 1]}
+            resolution={512}
+            mixBlur={0.2}
+            mixStrength={0.5}
+            roughness={0.5}
+            depthScale={0.5}
+            minDepthThreshold={0.9}
+            maxDepthThreshold={1.1}
+            color="#fff"
+            metalness={0.1}
+          />
+        )}
       </mesh>
       <SetEnvironment />
       {/* 球型展厅空间：大球体，内表面为黑色 */}
@@ -157,7 +203,7 @@ const ModelViewer: React.FC = () => {
         >
           <TopViewDetector onChange={setIsTopView} />
           <ExhibitionLights />
-          <ModelContent onMaterialsReady={setMaterials} />
+          <ModelContent onMaterialsReady={setMaterials} isTopView={isTopView} />
           <OrbitControls
             target={[0, 0, 0]}
             minDistance={3}
