@@ -3,3 +3,9 @@ html,body,#root{
   height:100%;
 }
 
+#r3f-stats {
+  left: 0 !important;
+  bottom: 0 !important;
+  top: auto !important;
+  z-index: 10000 !important;
+}

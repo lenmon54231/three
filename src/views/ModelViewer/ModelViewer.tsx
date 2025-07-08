@@ -1,6 +1,6 @@
 import BackButton from '@/components/BackButton/BackButton';
 import Loading from '@/components/Loading/Loading';
-import { MeshReflectorMaterial, OrbitControls } from '@react-three/drei';
+import { MeshReflectorMaterial, OrbitControls, Stats } from '@react-three/drei';
 import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
@@ -11,6 +11,7 @@ import Lightformer from '@/components/Lightformer/Lightformer';
 import ColorButtons from './components/ColorButtons';
 import hdr from '@/assets/hdr/studio_small_08_1k.hdr';
 import modal from '@/assets/modal/su7_z.glb';
+import CustomStats from '@/components/CustomStats/CustomStats';
 
 const SetEnvironment: React.FC = () => {
   const envMap = useLoader(RGBELoader, hdr);
@@ -66,16 +67,16 @@ const ModelContent: React.FC<{
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <circleGeometry args={[3.2, 64]} />
         <MeshReflectorMaterial
-          blur={[16, 4]}
-          resolution={512}
-          mixBlur={0.5}
-          mixStrength={0.8}
-          roughness={0.1}
-          depthScale={1.2}
-          minDepthThreshold={0.8}
-          maxDepthThreshold={1.2}
-          color="#fff"
-          metalness={0.2}
+           blur={[8, 2]}
+           resolution={512}
+           mixBlur={0.2}
+           mixStrength={0.5}
+           roughness={0.2}
+           depthScale={0.5}
+           minDepthThreshold={0.9}
+           maxDepthThreshold={1.1}
+           color="#fff"
+           metalness={0.1}
         />
       </mesh>
       <SetEnvironment />
@@ -132,6 +133,9 @@ const ModelViewer: React.FC = () => {
           />
         </Canvas>
       </Suspense>
+      <div className="fixed left-2 bottom-2 z-[10000] opacity-90">
+        <CustomStats />
+      </div>
     </div>
   );
 };
