@@ -1,7 +1,7 @@
 import BackButton from '@/components/BackButton/BackButton';
 import Loading from '@/components/Loading/Loading';
 import { MeshReflectorMaterial, OrbitControls, Sparkles } from '@react-three/drei';
-import { Canvas, useLoader, useThree, useFrame } from '@react-three/fiber';
+import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -110,26 +110,7 @@ function getTailColor(color: string) {
   return `rgb(${r},${g},${b})`;
 }
 
-// 判断相机是否靠近顶部视角的hook
-function useIsTopView(thresholdY = 2.5, thresholdAngle = 0.7) {
-  const { camera } = useThree();
-  const [isTop, setIsTop] = React.useState(false);
-  React.useEffect(() => {
-    function check() {
-      // y越大越靠近顶部
-      // 俯视角度：相机朝向与y轴夹角小于阈值
-      const up = new THREE.Vector3(0, -1, 0);
-      const camDir = new THREE.Vector3();
-      camera.getWorldDirection(camDir);
-      const angle = camDir.angleTo(up); // 0为正下，PI为正上
-      setIsTop(camera.position.y > thresholdY && angle < thresholdAngle);
-    }
-    check();
-    camera.addEventListener('change', check);
-    return () => camera.removeEventListener('change', check);
-  }, [camera, thresholdY, thresholdAngle]);
-  return isTop;
-}
+// 判断相机是否靠近顶部视角的hook（未使用，已移除）
 
 // 生成一条从左上到右上的流星参数（更广可视范围）
 function randomMeteorParams() {
@@ -207,7 +188,7 @@ const ModelViewer: React.FC = () => {
                     duration={0.6 + Math.random() * 1.2}
                     color={color}
                     tailColor={tailColor}
-                    width={0.1 + Math.random() * 0.15}
+                    width={0.22 + Math.random() * 0.18}
                   />
                 );
               })}

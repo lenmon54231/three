@@ -45,10 +45,10 @@ const Meteor: React.FC<MeteorProps> = ({
         new THREE.Vector3(...head),
         new THREE.Vector3(...tail),
       ]);
-      // 设置顶点颜色：头部亮色，尾部透明/渐变色
+      // 设置顶点颜色：头部半透明，尾部更透明
       const colors = new Float32Array([
-        ...new THREE.Color(color).toArray(), 1.0, // 头部不透明
-        ...new THREE.Color(tailColor).toArray(), 0.0, // 尾部透明
+        ...new THREE.Color(color).toArray(), 0.4, // 头部半透明
+        ...new THREE.Color(tailColor).toArray(), 0.1, // 尾部更透明
       ]);
       (lineRef.current.geometry as THREE.BufferGeometry).setAttribute(
         'color',
