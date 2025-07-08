@@ -9,9 +9,11 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import ExhibitionLights from './components/ExhibitionLights';
 import Lightformer from '@/components/Lightformer/Lightformer';
 import ColorButtons from './components/ColorButtons';
+import hdr from '@/assets/hdr/studio_small_08_1k.hdr';
+import modal from '@/assets/modal/su7_z.glb';
 
 const SetEnvironment: React.FC = () => {
-  const envMap = useLoader(RGBELoader, '/studio_small_08_1k.hdr');
+  const envMap = useLoader(RGBELoader, hdr);
   const { scene } = useThree();
   React.useEffect(() => {
     envMap.mapping = THREE.EquirectangularReflectionMapping;
@@ -24,7 +26,7 @@ const SetEnvironment: React.FC = () => {
 const ModelContent: React.FC<{
   onMaterialsReady?: (mats: THREE.MeshStandardMaterial[]) => void;
 }> = ({ onMaterialsReady }) => {
-  const gltf = useLoader(GLTFLoader, '/su7_z.glb');
+  const gltf = useLoader(GLTFLoader, modal);
   const groupRef = React.useRef<THREE.Group>(null);
   const colorMaterials = React.useRef<THREE.MeshStandardMaterial[]>([]);
 
