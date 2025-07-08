@@ -30,12 +30,13 @@ const Lightformer: React.FC<LightformerProps> = ({
 }) => {
   // 计算材质
   const material = useMemo(() => {
-    const mat = new MeshBasicMaterial({
+    const matParams: any = {
       color: typeof color === 'string' || typeof color === 'number' ? new ThreeColor(color) : color,
       side: DoubleSide,
-      map: map,
       toneMapped: toneMapped,
-    });
+    };
+    if (map) matParams.map = map;
+    const mat = new MeshBasicMaterial(matParams);
     mat.color.multiplyScalar(intensity);
     return mat;
   }, [color, intensity, map, toneMapped]);

@@ -52,7 +52,7 @@ const ExhibitionLights: React.FC = () => (
           key={i}
           intensity={6}
           from="rect"
-          position={[x, 4.4, z]}
+          position={[x, 4.8, z]}
           scale={[0.5, 0.5, 0.5]}
           color="#fff"
           rotation={[Math.PI / 2, 0, 0]}
