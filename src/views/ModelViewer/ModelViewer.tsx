@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import ExhibitionLights from './components/ExhibitionLights';
+import Lightformer from '@/components/Lightformer/Lightformer';
 
 const SetEnvironment: React.FC = () => {
   const envMap = useLoader(RGBELoader, '/studio_small_08_1k.hdr');
@@ -19,34 +20,51 @@ const SetEnvironment: React.FC = () => {
   return null;
 };
 
-const ModelContent: React.FC = () => {
+const ModelContent: React.FC<{
+  onMaterialsReady?: (mats: THREE.MeshStandardMaterial[]) => void;
+}> = ({ onMaterialsReady }) => {
   const gltf = useLoader(GLTFLoader, '/su7_z.glb');
   const groupRef = React.useRef<THREE.Group>(null);
+  const colorMaterials = React.useRef<THREE.MeshStandardMaterial[]>([]);
 
-  // 设置所有支持 envMapIntensity 的材质
+  // 设置所有支持 envMapIntensity 的材质，并收集可变色材质
   React.useEffect(() => {
     const { scene } = gltf;
     scene.position.set(0, 0, 0);
     scene.rotation.set(0, 0, 0);
+    colorMaterials.current = [];
     gltf.scene.traverse((obj: THREE.Object3D) => {
       if ((obj as THREE.Mesh).isMesh && (obj as THREE.Mesh).material) {
         const material = (obj as THREE.Mesh).material;
         if (Array.isArray(material)) {
           material.forEach((mat) => {
+            // 输出 mesh 和材质名称
+            console.log('Mesh:', obj.name, 'Material:', mat.name);
             if ('envMapIntensity' in mat) {
               (mat as THREE.MeshStandardMaterial).envMapIntensity = 0.3;
               mat.needsUpdate = true;
             }
+            if (typeof mat.name === 'string' && mat.name.startsWith('Car_')) {
+              colorMaterials.current.push(mat as THREE.MeshStandardMaterial);
+            }
           });
         } else {
+          // 输出 mesh 和材质名称
+          console.log('Mesh:', obj.name, 'Material:', material.name);
           if ('envMapIntensity' in material) {
             (material as THREE.MeshStandardMaterial).envMapIntensity = 0.3;
             material.needsUpdate = true;
           }
+          if (typeof material.name === 'string' && material.name.startsWith('Car_')) {
+            colorMaterials.current.push(material as THREE.MeshStandardMaterial);
+          }
         }
       }
     });
-  }, [gltf]);
+    if (onMaterialsReady) {
+      onMaterialsReady(colorMaterials.current);
+    }
+  }, [gltf, onMaterialsReady]);
 
   return (
     <>
@@ -80,17 +98,105 @@ const ModelContent: React.FC = () => {
 };
 
 const ModelViewer: React.FC = () => {
+  const [materials, setMaterials] = React.useState<
+    THREE.MeshStandardMaterial[]
+  >([]);
+
+  // 换色函数
+  const handleChangeColor = (color: string) => {
+    materials.forEach((mat) => {
+      mat.color.set(color);
+      mat.needsUpdate = true;
+    });
+  };
+
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <BackButton />
+      {/* 换色按钮 */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 24,
+          right: 24,
+          zIndex: 10,
+          display: 'flex',
+          gap: 8,
+        }}
+      >
+        <button
+          style={{
+            width: 32,
+            height: 32,
+            background: '#ff0000',
+            border: 'none',
+            borderRadius: 16,
+            cursor: 'pointer',
+          }}
+          onClick={() => handleChangeColor('#ff0000')}
+        />
+        <button
+          style={{
+            width: 32,
+            height: 32,
+            background: '#0051ff',
+            border: 'none',
+            borderRadius: 16,
+            cursor: 'pointer',
+          }}
+          onClick={() => handleChangeColor('#0051ff')}
+        />
+        <button
+          style={{
+            width: 32,
+            height: 32,
+            background: '#00c853',
+            border: 'none',
+            borderRadius: 16,
+            cursor: 'pointer',
+          }}
+          onClick={() => handleChangeColor('#00c853')}
+        />
+        <button
+          style={{
+            width: 32,
+            height: 32,
+            background: '#fff',
+            border: '1px solid #ccc',
+            borderRadius: 16,
+            cursor: 'pointer',
+          }}
+          onClick={() => handleChangeColor('#ffffff')}
+        />
+        <button
+          style={{
+            width: 32,
+            height: 32,
+            background: '#222',
+            border: '1px solid #ccc',
+            borderRadius: 16,
+            cursor: 'pointer',
+          }}
+          onClick={() => handleChangeColor('#222222')}
+        />
+      </div>
       <Suspense fallback={<Loading />}>
         <Canvas
-          camera={{ position: [3, 3, 3], fov: 35 }}
+          camera={{ position: [3, 3, 3], fov: 45 }}
           dpr={[1, 1.5]}
           shadows
         >
           <ExhibitionLights />
-          <ModelContent />
+          {/* 顶部光照 Lightformer，模拟 su7.vue 效果 */}
+          <Lightformer
+            intensity={6}
+            from="rect"
+            position={[0, 2.4, 0]}
+            scale={[4, 2, 2]}
+            color="#fff"
+            rotation={[Math.PI / 2, 0, 0]}
+          />
+          <ModelContent onMaterialsReady={setMaterials} />
           <OrbitControls
             target={[0, 0, 0]}
             minDistance={3}
