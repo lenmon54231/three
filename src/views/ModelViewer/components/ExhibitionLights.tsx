@@ -1,4 +1,5 @@
 import React from 'react';
+import Lightformer from '@/components/Lightformer/Lightformer';
 
 const ExhibitionLights: React.FC = () => (
   <>
@@ -39,6 +40,25 @@ const ExhibitionLights: React.FC = () => (
       distance={15}
       decay={2}
     />
+    {/* 顶部光照 Lightformer，模拟 su7.vue 效果 */}
+    {/* 6个Lightformer均匀分布在顶部圆周上 */}
+    {Array.from({ length: 6 }).map((_, i) => {
+      const radius = 0.8;
+      const angle = (i / 6) * Math.PI * 2;
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+      return (
+        <Lightformer
+          key={i}
+          intensity={6}
+          from="rect"
+          position={[x, 4.4, z]}
+          scale={[0.5, 0.5, 0.5]}
+          color="#fff"
+          rotation={[Math.PI / 2, 0, 0]}
+        />
+      );
+    })}
   </>
 );
 

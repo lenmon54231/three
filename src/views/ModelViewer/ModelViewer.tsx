@@ -1,13 +1,12 @@
 import BackButton from '@/components/BackButton/BackButton';
 import Loading from '@/components/Loading/Loading';
-import { MeshReflectorMaterial, OrbitControls, Stats } from '@react-three/drei';
+import { MeshReflectorMaterial, OrbitControls } from '@react-three/drei';
 import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import ExhibitionLights from './components/ExhibitionLights';
-import Lightformer from '@/components/Lightformer/Lightformer';
 import ColorButtons from './components/ColorButtons';
 import hdr from '@/assets/hdr/studio_small_08_1k.hdr';
 import modal from '@/assets/modal/su7_z.glb';
@@ -67,11 +66,11 @@ const ModelContent: React.FC<{
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <circleGeometry args={[3.2, 64]} />
         <MeshReflectorMaterial
-           blur={[8, 2]}
+           blur={[2, 1]}
            resolution={512}
            mixBlur={0.2}
            mixStrength={0.5}
-           roughness={0.2}
+           roughness={0.5}
            depthScale={0.5}
            minDepthThreshold={0.9}
            maxDepthThreshold={1.1}
@@ -114,15 +113,6 @@ const ModelViewer: React.FC = () => {
           shadows
         >
           <ExhibitionLights />
-          {/* 顶部光照 Lightformer，模拟 su7.vue 效果 */}
-          <Lightformer
-            intensity={6}
-            from="rect"
-            position={[0, 2.4, 0]}
-            scale={[4, 2, 2]}
-            color="#fff"
-            rotation={[Math.PI / 2, 0, 0]}
-          />
           <ModelContent onMaterialsReady={setMaterials} />
           <OrbitControls
             target={[0, 0, 0]}
