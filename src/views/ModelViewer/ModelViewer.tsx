@@ -102,7 +102,7 @@ const ModelViewer: React.FC = () => {
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+    <div style={{ width: '100vw', height: '100vh', position: 'relative', cursor: 'pointer' }}>
       <BackButton />
       {/* 换色按钮 */}
       <ColorButtons onChange={handleChangeColor} />
