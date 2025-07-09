@@ -14,6 +14,7 @@ import Meteor from '@/components/Meteor';
 import { TopViewDetector } from '@/components/TopViewDetector';
 import { Water2Circle } from '@/components/Water2Circle';
 import waterNormalsImg from '@/assets/image/water/waternormals.jpg';
+import { TextureLoader } from 'three';
 
 const SetEnvironment: React.FC = () => {
   const envMap = useLoader(RGBELoader, hdr);
@@ -26,6 +27,16 @@ const SetEnvironment: React.FC = () => {
   return null;
 };
 
+const AO_TEXTURE_PATH = '/su7_car/t_car_body_AO.raw.jpg';
+
+function flatModel(scene: THREE.Object3D): THREE.Mesh[] {
+  const modelArr: THREE.Mesh[] = [];
+  scene.traverse((child) => {
+    modelArr.push(child as THREE.Mesh);
+  });
+  return modelArr;
+}
+
 const ModelContent: React.FC<{
   isTopView?: boolean;
   waterNormals: THREE.Texture;
@@ -37,6 +48,27 @@ const ModelContent: React.FC<{
       loader.setMeshoptDecoder(MeshoptDecoder);
     }
   );
+  const aoMap = useLoader(TextureLoader, AO_TEXTURE_PATH);
+aoMap.channel = 1
+aoMap.flipY = false
+  React.useEffect(() => {
+    const meshes = flatModel(gltf.scene);
+
+
+
+    const body = meshes[2] as THREE.Mesh
+const bodyMat = body.material as THREE.MeshStandardMaterial
+bodyMat.envMapIntensity = 4
+bodyMat.color = new THREE.Color('#26d6e9')
+
+
+     meshes.forEach((mesh) => {
+      if (mesh.isMesh && mesh.material) {
+        const mat = mesh.material as THREE.MeshStandardMaterial;
+        mat.aoMap = aoMap;
+      }
+    });
+  }, [gltf, aoMap]);
   return (
     <>
       <group>
@@ -92,8 +124,6 @@ function getTailColor(color: string) {
   // 返回rgb字符串
   return `rgb(${r},${g},${b})`;
 }
-
-// 判断相机是否靠近顶部视角的hook（未使用，已移除）
 
 // 生成一条从右上到左上的流星参数（更广可视范围）
 function randomMeteorParams() {
