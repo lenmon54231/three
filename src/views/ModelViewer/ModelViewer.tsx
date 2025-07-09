@@ -122,14 +122,14 @@ function getTailColor(color: string) {
 
 // 判断相机是否靠近顶部视角的hook（未使用，已移除）
 
-// 生成一条从左上到右上的流星参数（更广可视范围）
+// 生成一条从右上到左上的流星参数（更广可视范围）
 function randomMeteorParams() {
-  // 起点在顶部更广区域左侧
-  const xStart = -5 + Math.random() * 2.5; // -5 ~ -2.5
-  const yStart = 2.2 + Math.random() * 2.2; // 2.2 ~ 4.4
-  const zStart = -4 + Math.random() * 8;    // -4 ~ 4
-  // 终点在顶部更广区域右侧
-  const xEnd = 2.5 + Math.random() * 2.5;   // 2.5 ~ 5
+  // 起点在顶部更集中区域右侧
+  const xStart = 2 + Math.random() * 2;      // 2 ~ 4
+  const yStart = 1.0 + Math.random() * 1.2;  // 1.0 ~ 2.2
+  const zStart = -3 + Math.random() * 6;     // -3 ~ 3
+  // 终点在顶部更集中区域左侧
+  const xEnd = -4 + Math.random() * 2;       // -4 ~ -2
   const yEnd = yStart + (Math.random() - 0.5) * 0.5; // y基本不变，微小扰动
   const zEnd = zStart + (Math.random() - 0.5) * 1.2;  // z更大扰动
   return {
