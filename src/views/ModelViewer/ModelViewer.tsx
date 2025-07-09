@@ -11,6 +11,7 @@ import waterNormalsImg from '@/assets/image/water/waternormals.jpg';
 import ColorButtons from './components/ColorButtons';
 import Meteors from './components/Meteors';
 import ModelContent from './components/ModelContent';
+import SpotLightWithCone from './components/SpotLightWithCone';
 
 const ModelViewer: React.FC = () => {
   // 只在顶部视角显示流星
@@ -23,29 +24,35 @@ const ModelViewer: React.FC = () => {
   const waterNormals = useLoader(
     THREE.TextureLoader,
     waterNormalsImg
-    // 'https://threejs.org/examples/textures/waternormals.jpg'
   );
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', cursor: 'pointer' }}>
       <BackButton />
-      {/* 使用 ColorButtons 组件 */}
       <ColorButtons onChange={setCarColor} />
       <Suspense fallback={<Loading />}>
         <Canvas
-          camera={{ position: [3, 3, 3], fov: 45 }}
+          camera={{ position: [6, 6, 6], fov: 45 }}
           dpr={[1, 1.5]}
           shadows
         >
           <TopViewDetector onChange={setIsTopView} />
           <ExhibitionLights />
+          <SpotLightWithCone
+            position={[0, 2.8, 0]}
+            target={[0, 0, 0]}
+            angle={Math.PI / 6}
+            color="#fff"
+            coneHeight={5.5}
+            coneOpacity={0.1}
+          />
           <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} />
           <OrbitControls
             target={[0, 0, 0]}
             minDistance={3}
             maxDistance={8}
-            minPolarAngle={Math.PI / 6}
-            maxPolarAngle={Math.PI / 3}
+            minPolarAngle={Math.PI / 9}
+            maxPolarAngle={Math.PI * 5 / 12}
           />
           <Sparkles
             count={60}
