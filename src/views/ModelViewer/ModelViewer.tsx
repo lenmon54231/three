@@ -5,16 +5,18 @@ import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { TextureLoader, MeshStandardMaterial, Mesh, Object3D, Texture, Color } from 'three';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import ExhibitionLights from './components/ExhibitionLights';
 import ColorButtons from './components/ColorButtons';
 import hdr from '@/assets/hdr/studio_small_08_1k.hdr';
-import modal from '@/assets/modal/su7_z.glb';
 import CustomStats from '@/components/CustomStats/CustomStats';
 import Meteor from '@/components/Meteor';
 import { TopViewDetector } from '@/components/TopViewDetector';
 import { Water2Circle } from '@/components/Water2Circle';
 import waterNormalsImg from '@/assets/image/water/waternormals.jpg';
+import type { Material } from 'three';
 
 const SetEnvironment: React.FC = () => {
   const envMap = useLoader(RGBELoader, hdr);
@@ -27,14 +29,78 @@ const SetEnvironment: React.FC = () => {
   return null;
 };
 
+const AO_TEXTURE_PATH = '/su7_car/t_car_body_AO.raw.jpg';
+const MAP1_TEXTURE_PATH = '/su7_car/t_cat_car_body_bc.webp';
+const MAP2_TEXTURE_PATH = '/su7_car/t_gm_car_body_bc.webp';
+
 const ModelContent: React.FC<{
   onMaterialsReady?: (mats: THREE.MeshStandardMaterial[]) => void;
   isTopView?: boolean;
   waterNormals: THREE.Texture;
 }> = ({ onMaterialsReady, isTopView, waterNormals, /* onWheelsReady */ }) => {
-  const gltf = useLoader(GLTFLoader, modal);
+  const gltf = useLoader(
+    GLTFLoader,
+    '/su7_car/sm_car.gltf',
+    (loader) => {
+      loader.setMeshoptDecoder(MeshoptDecoder);
+    }
+  );
+  const [aoMap, map1, map2] = useLoader(TextureLoader, [AO_TEXTURE_PATH, MAP1_TEXTURE_PATH, MAP2_TEXTURE_PATH]);
+  React.useEffect(() => {
+    [aoMap, map1, map2].forEach((tex) => {
+      tex.flipY = false;
+      if ('colorSpace' in tex) {
+        (tex as Texture).colorSpace = 'srgb';
+      }
+      tex.needsUpdate = true;
+    });
+    gltf.scene.traverse((obj: Object3D) => {
+      if ((obj as Mesh).isMesh && (obj as Mesh).material) {
+        const mesh = obj as Mesh;
+        if (!mesh.geometry.attributes.uv2 && mesh.geometry.attributes.uv) {
+          mesh.geometry.setAttribute('uv2', mesh.geometry.attributes.uv);
+        }
+        const mats: MeshStandardMaterial[] = Array.isArray(mesh.material)
+          ? mesh.material as MeshStandardMaterial[]
+          : [mesh.material as MeshStandardMaterial];
+        mats.forEach((mat) => {
+          mat.aoMap = aoMap;
+          if (mat.name === 'Car_body') {
+            mat.map = map2;
+            mat.color = new Color('#26d6e9');
+            mat.envMapIntensity = 4;
+          }
+          (['map', 'aoMap', 'normalMap', 'roughnessMap', 'metalnessMap'] as const).forEach((key) => {
+            if (mat[key]) {
+              mat[key]!.flipY = false;
+              (mat[key] as Texture).needsUpdate = true;
+            }
+          });
+        });
+      }
+    });
+  }, [gltf, aoMap, map1, map2]);
   const groupRef = React.useRef<THREE.Group>(null);
   const colorMaterials = React.useRef<THREE.MeshStandardMaterial[]>([]);
+
+  // 修正所有贴图的flipY，防止贴图颠倒或错位
+  React.useEffect(() => {
+    gltf.scene.traverse((obj: THREE.Object3D) => {
+      if ((obj as THREE.Mesh).isMesh && (obj as THREE.Mesh).material) {
+        const fixMats: Material[] = Array.isArray((obj as THREE.Mesh).material)
+          ? (obj as THREE.Mesh).material as Material[]
+          : [(obj as THREE.Mesh).material as Material];
+        fixMats.forEach((mat) => {
+          const m = mat as THREE.MeshStandardMaterial;
+          (['map', 'aoMap', 'normalMap', 'roughnessMap', 'metalnessMap'] as const).forEach((key) => {
+            if (m[key]) {
+              m[key]!.flipY = false;
+            }
+          });
+        });
+      }
+    });
+  }, [gltf]);
 
   // 设置所有支持 envMapIntensity 的材质，并收集可变色材质
   React.useEffect(() => {
