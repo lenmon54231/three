@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
-import { useLoader, extend } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Water } from 'three-stdlib';
+import { extend } from '@react-three/fiber';
 
 extend({ Water });
 
@@ -22,7 +22,7 @@ export const Water2Circle: React.FC<{ radius?: number; waterNormals: THREE.Textu
         distortionScale: 2.5,
         fog: false,
         format: 3001,
-      }
+      } as any
     );
   }, [radius, waterNormals]);
 

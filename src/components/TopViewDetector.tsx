@@ -1,5 +1,4 @@
 import { useThree, useFrame } from '@react-three/fiber';
-import React from 'react';
 import * as THREE from 'three';
 
 export function TopViewDetector({ onChange }: { onChange: (isTop: boolean) => void }) {
