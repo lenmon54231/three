@@ -37,10 +37,22 @@ function flatModel(scene: THREE.Object3D): THREE.Mesh[] {
   return modelArr;
 }
 
+// 1. 颜色列表
+const CAR_COLORS = [
+  '#26d6e9', // 默认色
+  '#ff4d4f',
+  '#52c41a',
+  '#1890ff',
+  '#a259ff',
+  '#ffb300',
+  '#fff',
+];
+
 const ModelContent: React.FC<{
   isTopView?: boolean;
   waterNormals: THREE.Texture;
-}> = ({ isTopView, waterNormals }) => {
+  carColor: string; // 新增
+}> = ({ isTopView, waterNormals, carColor }) => {
   const gltf = useLoader(
     GLTFLoader,
     '/su7_car/sm_car.gltf',
@@ -49,26 +61,23 @@ const ModelContent: React.FC<{
     }
   );
   const aoMap = useLoader(TextureLoader, AO_TEXTURE_PATH);
-aoMap.channel = 1
-aoMap.flipY = false
+  aoMap.channel = 1
+  aoMap.flipY = false
   React.useEffect(() => {
     const meshes = flatModel(gltf.scene);
 
-
-
     const body = meshes[2] as THREE.Mesh
-const bodyMat = body.material as THREE.MeshStandardMaterial
-bodyMat.envMapIntensity = 4
-bodyMat.color = new THREE.Color('#26d6e9')
+    const bodyMat = body.material as THREE.MeshStandardMaterial
+    bodyMat.envMapIntensity = 4
+    bodyMat.color = new THREE.Color(carColor) // 这里用 props 传入的 carColor
 
-
-     meshes.forEach((mesh) => {
+    meshes.forEach((mesh) => {
       if (mesh.isMesh && mesh.material) {
         const mat = mesh.material as THREE.MeshStandardMaterial;
         mat.aoMap = aoMap;
       }
     });
-  }, [gltf, aoMap]);
+  }, [gltf, aoMap, carColor]); // 依赖 carColor
   return (
     <>
       <group>
@@ -145,6 +154,15 @@ const ModelViewer: React.FC = () => {
   // 只在顶部视角显示流星
   const [isTopView, setIsTopView] = React.useState(false);
 
+  // 车身颜色索引
+  const [carColorIdx, setCarColorIdx] = React.useState(0);
+  const carColor = CAR_COLORS[carColorIdx];
+
+  // 切换颜色
+  const handleChangeColor = () => {
+    setCarColorIdx((idx) => (idx + 1) % CAR_COLORS.length);
+  };
+
   // 父组件提前加载 waterNormals 贴图
   const waterNormals = useLoader(
     THREE.TextureLoader,
@@ -155,6 +173,26 @@ const ModelViewer: React.FC = () => {
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', cursor: 'pointer' }}>
       <BackButton />
+      {/* 新增换色按钮 */}
+      <button
+        style={{
+          position: 'absolute',
+          right: 24,
+          top: 24,
+          zIndex: 10001,
+          padding: '8px 16px',
+          background: carColor,
+          color: '#222',
+          border: 'none',
+          borderRadius: 8,
+          fontWeight: 600,
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+        }}
+        onClick={handleChangeColor}
+      >
+        切换车身颜色
+      </button>
       {/* 换色按钮 */}
       {/* <ColorButtons onChange={handleChangeColor} /> */}
       <Suspense fallback={<Loading />}>
@@ -165,7 +203,7 @@ const ModelViewer: React.FC = () => {
         >
           <TopViewDetector onChange={setIsTopView} />
           <ExhibitionLights />
-          <ModelContent isTopView={isTopView} waterNormals={waterNormals} />
+          <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} /> {/* 传递 carColor */}
           <OrbitControls
             target={[0, 0, 0]}
             minDistance={3}
