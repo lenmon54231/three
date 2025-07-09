@@ -1,7 +1,7 @@
 import BackButton from '@/components/BackButton/BackButton';
 import Loading from '@/components/Loading/Loading';
 import { MeshReflectorMaterial, OrbitControls, Sparkles } from '@react-three/drei';
-import { Canvas, useLoader, useThree, useFrame } from '@react-three/fiber';
+import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -13,6 +13,8 @@ import modal from '@/assets/modal/su7_z.glb';
 import CustomStats from '@/components/CustomStats/CustomStats';
 import Meteor from '@/components/Meteor';
 import { TopViewDetector } from '@/components/TopViewDetector';
+import { Water2Circle } from '@/components/Water2Circle';
+import waterNormalsImg from '@/assets/image/water/waternormals.jpg';
 
 const SetEnvironment: React.FC = () => {
   const envMap = useLoader(RGBELoader, hdr);
@@ -25,51 +27,11 @@ const SetEnvironment: React.FC = () => {
   return null;
 };
 
-// 水波纹材质组件（可后续独立成文件）
-const WaterRippleMaterial: React.ForwardRefRenderFunction<THREE.ShaderMaterial, object> = (props, ref) => {
-  const materialRef = React.useRef<THREE.ShaderMaterial>(null);
-  useFrame(({ clock }) => {
-    if (materialRef.current) {
-      (materialRef.current as THREE.ShaderMaterial).uniforms.uTime.value = clock.getElapsedTime();
-    }
-  });
-  return (
-    <shaderMaterial
-      ref={ref || materialRef}
-      attach="material"
-      vertexShader={`
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-        }
-      `}
-      fragmentShader={`
-        varying vec2 vUv;
-        uniform float uTime;
-        void main() {
-          float dist = distance(vUv, vec2(0.5));
-          float ripple = 0.03 * sin(40.0 * dist - uTime * 2.0);
-          float alpha = 0.7 * smoothstep(0.5, 0.45, dist + ripple);
-          gl_FragColor = vec4(0.6, 0.8, 1.0, alpha);
-        }
-      `}
-      uniforms={{ uTime: { value: 0 } }}
-      transparent
-      side={THREE.DoubleSide}
-      depthWrite={false}
-      blending={THREE.AdditiveBlending}
-      {...props}
-    />
-  );
-};
-
-const ForwardedWaterRippleMaterial = React.forwardRef(WaterRippleMaterial);
-
 const ModelContent: React.FC<{
   onMaterialsReady?: (mats: THREE.MeshStandardMaterial[]) => void;
   isTopView?: boolean;
-}> = ({ onMaterialsReady, isTopView }) => {
+  waterNormals: THREE.Texture;
+}> = ({ onMaterialsReady, isTopView, waterNormals, /* onWheelsReady */ }) => {
   const gltf = useLoader(GLTFLoader, modal);
   const groupRef = React.useRef<THREE.Group>(null);
   const colorMaterials = React.useRef<THREE.MeshStandardMaterial[]>([]);
@@ -83,6 +45,7 @@ const ModelContent: React.FC<{
     gltf.scene.traverse((obj: THREE.Object3D) => {
       if ((obj as THREE.Mesh).isMesh && (obj as THREE.Mesh).material) {
         const material = (obj as THREE.Mesh).material;
+        // 输出所有material的名称
         if (Array.isArray(material)) {
           material.forEach((mat) => {
             if (typeof mat.name === 'string' && mat.name.startsWith('Car_')) {
@@ -99,19 +62,19 @@ const ModelContent: React.FC<{
     if (onMaterialsReady) {
       onMaterialsReady(colorMaterials.current);
     }
-  }, [gltf, onMaterialsReady]);
+  }, [gltf, onMaterialsReady/*, onWheelsReady*/]);
 
   return (
     <>
       <group ref={groupRef}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
       </group>
-      {/* 镜面反射圆形底座/水波纹底座 */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <circleGeometry args={[3.2, 64]} />
-        {isTopView ? (
-          <ForwardedWaterRippleMaterial />
-        ) : (
+      {/* 镜面反射圆形底座/水波纹底座（条件渲染，避免 geometry 冲突） */}
+      {isTopView ? (
+        <Water2Circle radius={3.2} waterNormals={waterNormals} />
+      ) : (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+          <circleGeometry args={[3.2, 64]} />
           <MeshReflectorMaterial
             blur={[2, 1]}
             resolution={512}
@@ -123,9 +86,10 @@ const ModelContent: React.FC<{
             maxDepthThreshold={1.1}
             color="#fff"
             metalness={0.1}
+            side={THREE.DoubleSide}
           />
-        )}
-      </mesh>
+        </mesh>
+      )}
       <SetEnvironment />
       {/* 球型展厅空间：大球体，内表面为黑色 */}
       <mesh>
@@ -190,6 +154,13 @@ const ModelViewer: React.FC = () => {
     });
   };
 
+  // 父组件提前加载 waterNormals 贴图
+  const waterNormals = useLoader(
+    THREE.TextureLoader,
+    waterNormalsImg
+    // 'https://threejs.org/examples/textures/waternormals.jpg'
+  );
+
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', cursor: 'pointer' }}>
       <BackButton />
@@ -203,7 +174,7 @@ const ModelViewer: React.FC = () => {
         >
           <TopViewDetector onChange={setIsTopView} />
           <ExhibitionLights />
-          <ModelContent onMaterialsReady={setMaterials} isTopView={isTopView} />
+          <ModelContent onMaterialsReady={setMaterials} isTopView={isTopView} waterNormals={waterNormals} />
           <OrbitControls
             target={[0, 0, 0]}
             minDistance={3}
