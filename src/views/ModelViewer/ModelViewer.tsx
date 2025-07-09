@@ -15,6 +15,7 @@ import { TopViewDetector } from '@/components/TopViewDetector';
 import { Water2Circle } from '@/components/Water2Circle';
 import waterNormalsImg from '@/assets/image/water/waternormals.jpg';
 import { TextureLoader } from 'three';
+import ColorButtons from './components/ColorButtons';
 
 const SetEnvironment: React.FC = () => {
   const envMap = useLoader(RGBELoader, hdr);
@@ -36,17 +37,6 @@ function flatModel(scene: THREE.Object3D): THREE.Mesh[] {
   });
   return modelArr;
 }
-
-// 1. 颜色列表
-const CAR_COLORS = [
-  '#26d6e9', // 默认色
-  '#ff4d4f',
-  '#52c41a',
-  '#1890ff',
-  '#a259ff',
-  '#ffb300',
-  '#fff',
-];
 
 const ModelContent: React.FC<{
   isTopView?: boolean;
@@ -154,14 +144,8 @@ const ModelViewer: React.FC = () => {
   // 只在顶部视角显示流星
   const [isTopView, setIsTopView] = React.useState(false);
 
-  // 车身颜色索引
-  const [carColorIdx, setCarColorIdx] = React.useState(0);
-  const carColor = CAR_COLORS[carColorIdx];
-
-  // 切换颜色
-  const handleChangeColor = () => {
-    setCarColorIdx((idx) => (idx + 1) % CAR_COLORS.length);
-  };
+  // 车身颜色
+  const [carColor, setCarColor] = React.useState('#2B95AB');
 
   // 父组件提前加载 waterNormals 贴图
   const waterNormals = useLoader(
@@ -173,28 +157,8 @@ const ModelViewer: React.FC = () => {
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', cursor: 'pointer' }}>
       <BackButton />
-      {/* 新增换色按钮 */}
-      <button
-        style={{
-          position: 'absolute',
-          right: 24,
-          top: 24,
-          zIndex: 10001,
-          padding: '8px 16px',
-          background: carColor,
-          color: '#222',
-          border: 'none',
-          borderRadius: 8,
-          fontWeight: 600,
-          cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-        }}
-        onClick={handleChangeColor}
-      >
-        切换车身颜色
-      </button>
-      {/* 换色按钮 */}
-      {/* <ColorButtons onChange={handleChangeColor} /> */}
+      {/* 使用 ColorButtons 组件 */}
+      <ColorButtons onChange={setCarColor} />
       <Suspense fallback={<Loading />}>
         <Canvas
           camera={{ position: [3, 3, 3], fov: 45 }}
@@ -203,7 +167,7 @@ const ModelViewer: React.FC = () => {
         >
           <TopViewDetector onChange={setIsTopView} />
           <ExhibitionLights />
-          <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} /> {/* 传递 carColor */}
+          <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} />
           <OrbitControls
             target={[0, 0, 0]}
             minDistance={3}
