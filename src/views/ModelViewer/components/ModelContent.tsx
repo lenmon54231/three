@@ -8,6 +8,7 @@ import { MeshReflectorMaterial } from '@react-three/drei';
 import { Water2Circle } from '@/components/Water2Circle';
 import hdr from '@/assets/hdr/studio_small_08_1k.hdr';
 import { TextureLoader } from 'three';
+import { useSpring, animated } from '@react-spring/three';
 
 const SetEnvironment: React.FC = () => {
   const envMap = useLoader(RGBELoader, hdr);
@@ -30,11 +31,14 @@ function flatModel(scene: THREE.Object3D): THREE.Mesh[] {
   return modelArr;
 }
 
-const ModelContent: React.FC<{
+interface ModelContentProps {
   isTopView?: boolean;
   waterNormals: THREE.Texture;
   carColor: string;
-}> = ({ isTopView, waterNormals, carColor }) => {
+  startAnim?: boolean;
+}
+
+const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, carColor, startAnim = false }) => {
   const gltf = useLoader(
     GLTFLoader,
     '/su7_car/sm_car.gltf',
@@ -58,10 +62,19 @@ const ModelContent: React.FC<{
       }
     });
   }, [gltf, aoMap, carColor]);
+
+  // 入场运镜动画
+  const { rotY } = useSpring({
+    rotY: startAnim ? -Math.PI * 8 / 13 : -Math.PI * 3 / 4,
+    from: { rotY: -Math.PI * 3 / 4 },
+    config: { mass: 1.5, tension: 40, friction: 40 },
+    delay: 0,
+  });
+
   return (
     <>
       <group>
-        <primitive object={gltf.scene} scale={[1, 1, 1]} />
+        <animated.primitive object={gltf.scene} scale={[1, 1, 1]} rotation-y={rotY} />
       </group>
       {/* 镜面反射圆形底座/水波纹底座（条件渲染，避免 geometry 冲突） */}
       {isTopView ? (

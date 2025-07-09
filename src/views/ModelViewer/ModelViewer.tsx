@@ -26,13 +26,29 @@ const ModelViewer: React.FC = () => {
     waterNormalsImg
   );
 
+  const [startAnim, setStartAnim] = React.useState(false);
+  const [loadingDone, setLoadingDone] = React.useState(false);
+
+  // 监听 Suspense 加载完成，500ms 后触发动画
+  React.useEffect(() => {
+    if (loadingDone) {
+      const timer = setTimeout(() => setStartAnim(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [loadingDone]);
+
+  // 利用 Suspense 的 onLoad 机制（此处简化为首次渲染后触发）
+  React.useEffect(() => {
+    setLoadingDone(true);
+  }, []);
+
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', cursor: 'pointer' }}>
       <BackButton />
       <ColorButtons onChange={setCarColor} />
       <Suspense fallback={<Loading />}>
         <Canvas
-          camera={{ position: [6, 6, 6], fov: 45 }}
+          camera={{ position: [6, 2, 6], fov: 45 }}
           dpr={[1, 1.5]}
           shadows
         >
@@ -46,7 +62,7 @@ const ModelViewer: React.FC = () => {
             coneHeight={5.5}
             coneOpacity={0.1}
           />
-          <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} />
+          <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} startAnim={startAnim} />
           <OrbitControls
             target={[0, 0, 0]}
             minDistance={3}
@@ -66,6 +82,7 @@ const ModelViewer: React.FC = () => {
           {isTopView && <Meteors count={16} show={isTopView} />}
         </Canvas>
       </Suspense>
+
       <div className="fixed left-2 bottom-2 z-[10000] opacity-90">
         <CustomStats />
       </div>
