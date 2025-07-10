@@ -12,6 +12,23 @@ import ColorButtons from './components/ColorButtons';
 import Meteors from './components/Meteors';
 import ModelContent from './components/ModelContent';
 import SpotLightWithCone from './components/SpotLightWithCone';
+import { useSpring } from '@react-spring/three';
+import { useThree, useFrame } from '@react-three/fiber';
+
+// 用于将 spring 的 camPos 同步到 three-fiber 默认相机
+const CameraSpringSync: React.FC<{ camPos: any; startAnim: boolean }> = ({ camPos, startAnim }) => {
+  const { camera } = useThree();
+  useFrame(() => {
+    if (startAnim && camPos.get) {
+      const [x, y, z] = camPos.get();
+      camera.position.set(x, y, z);
+    } else {
+      camera.position.set(6, 2.5, 6);
+    }
+    camera.updateProjectionMatrix();
+  });
+  return null;
+};
 
 const ModelViewer: React.FC = () => {
   // 只在顶部视角显示流星
@@ -29,10 +46,16 @@ const ModelViewer: React.FC = () => {
   const [startAnim, setStartAnim] = React.useState(false);
   const [loadingDone, setLoadingDone] = React.useState(false);
 
+  // 相机运镜动画
+  const { camPos } = useSpring({
+    camPos: startAnim ? [3, 1.5, 3] : [6, 2.5, 6],
+    config: { mass: 1, tension: 80, friction: 20 },
+  });
+
   // 监听 Suspense 加载完成，500ms 后触发动画
   React.useEffect(() => {
     if (loadingDone) {
-      const timer = setTimeout(() => setStartAnim(true), 1000);
+      const timer = setTimeout(() => setStartAnim(true), 500);
       return () => clearTimeout(timer);
     }
   }, [loadingDone]);
@@ -48,10 +71,11 @@ const ModelViewer: React.FC = () => {
       <ColorButtons onChange={setCarColor} />
       <Suspense fallback={<Loading />}>
         <Canvas
-          camera={{ position: [6, 2, 6], fov: 45 }}
+          camera={{ position: [6, 2.5, 6], fov: 45 }}
           dpr={[1, 1.5]}
           shadows
         >
+          <CameraSpringSync camPos={camPos} startAnim={startAnim} />
           <TopViewDetector onChange={setIsTopView} />
           <ExhibitionLights />
           <SpotLightWithCone
@@ -69,6 +93,7 @@ const ModelViewer: React.FC = () => {
             maxDistance={8}
             minPolarAngle={Math.PI / 9}
             maxPolarAngle={Math.PI * 5 / 12}
+            enabled={!startAnim}
           />
           <Sparkles
             count={60}
