@@ -23,8 +23,9 @@ const CameraSpringSync: React.FC<{ camPos: any; startAnim: boolean }> = ({ camPo
       const [x, y, z] = camPos.get();
       camera.position.set(x, y, z);
     } else {
-      camera.position.set(6, 2.5, 6);
+      camera.position.set(6, 3, 6);
     }
+    camera.lookAt(0, 0.5, 0); // 保证朝向和 OrbitControls 的 target 一致
     camera.updateProjectionMatrix();
   });
   return null;
@@ -45,20 +46,31 @@ const ModelViewer: React.FC = () => {
 
   const [startAnim, setStartAnim] = React.useState(false);
   const [loadingDone, setLoadingDone] = React.useState(false);
+  const [animDone, setAnimDone] = React.useState(false);
 
   // 相机运镜动画
   const { camPos } = useSpring({
-    camPos: startAnim ? [3, 1.5, 3] : [6, 2.5, 6],
+    camPos: startAnim ? [3, 2, 3] : [6, 3, 6],
     config: { mass: 1, tension: 80, friction: 20 },
   });
 
-  // 监听 Suspense 加载完成，500ms 后触发动画
+  // 监听 Suspense 加载完成，800ms 后触发动画
   React.useEffect(() => {
     if (loadingDone) {
-      const timer = setTimeout(() => setStartAnim(true), 500);
+      const timer = setTimeout(() => setStartAnim(true), 800);
       return () => clearTimeout(timer);
     }
   }, [loadingDone]);
+
+  // 动画完成后允许交互（假设动画时长 1s，与 spring config 匹配）
+  React.useEffect(() => {
+    if (startAnim) {
+      const timer = setTimeout(() => setAnimDone(true), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setAnimDone(false);
+    }
+  }, [startAnim]);
 
   // 利用 Suspense 的 onLoad 机制（此处简化为首次渲染后触发）
   React.useEffect(() => {
@@ -71,16 +83,16 @@ const ModelViewer: React.FC = () => {
       <ColorButtons onChange={setCarColor} />
       <Suspense fallback={<Loading />}>
         <Canvas
-          camera={{ position: [6, 2.5, 6], fov: 45 }}
+          camera={{ position: [6, 3, 6], fov: 45 }}
           dpr={[1, 1.5]}
           shadows
         >
-          <CameraSpringSync camPos={camPos} startAnim={startAnim} />
+          {!animDone && <CameraSpringSync camPos={camPos} startAnim={startAnim} />}
           <TopViewDetector onChange={setIsTopView} />
           <ExhibitionLights />
           <SpotLightWithCone
             position={[0, 2.8, 0]}
-            target={[0, 0, 0]}
+            target={[0, 0.5, 0]}
             angle={Math.PI / 6}
             color="#fff"
             coneHeight={5.5}
@@ -88,12 +100,12 @@ const ModelViewer: React.FC = () => {
           />
           <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} startAnim={startAnim} />
           <OrbitControls
-            target={[0, 0, 0]}
+            target={[0, 0.5, 0]}
             minDistance={3}
             maxDistance={8}
             minPolarAngle={Math.PI / 9}
             maxPolarAngle={Math.PI * 5 / 12}
-            enabled={!startAnim}
+            enabled={animDone}
           />
           <Sparkles
             count={60}
