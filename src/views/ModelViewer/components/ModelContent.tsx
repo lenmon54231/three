@@ -83,16 +83,16 @@ const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, ca
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
           <circleGeometry args={[3.2, 64]} />
           <MeshReflectorMaterial
-            blur={[2, 1]}
-            resolution={512}
-            mixBlur={0.2}
-            mixStrength={0.5}
-            roughness={0.5}
+            blur={[0.5, 0.2]}
+            resolution={1024}
+            mixBlur={0.05}
+            mixStrength={1}
+            roughness={0.1}
             depthScale={0.5}
             minDepthThreshold={0.9}
             maxDepthThreshold={1.1}
             color="#fff"
-            metalness={0.1}
+            metalness={0.5}
             side={THREE.DoubleSide}
           />
         </mesh>

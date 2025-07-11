@@ -50,7 +50,7 @@ const ModelViewer: React.FC = () => {
 
   // 相机运镜动画
   const { camPos } = useSpring({
-    camPos: startAnim ? [3, 2, 3] : [6, 3, 6],
+    camPos: startAnim ? [3 * 1.2, 2 * 1.2, 3 * 1.2] : [6, 3, 6],
     config: { mass: 1, tension: 80, friction: 20 },
   });
 
@@ -106,6 +106,7 @@ const ModelViewer: React.FC = () => {
             minPolarAngle={Math.PI / 9}
             maxPolarAngle={Math.PI * 5 / 12}
             enabled={animDone}
+            enableZoom={false}
           />
           <Sparkles
             count={60}
