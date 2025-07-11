@@ -93,8 +93,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, ca
     texture.needsUpdate = true;
     return texture;
   }
-  const rectGradientMap: THREE.Texture | undefined = React.useMemo(() => createRectGradientTexture(512) || undefined, []);
-
+ 
   // 长方形水面对象，始终 useMemo
   const planeWater = React.useMemo(() => {
     return new (Water as unknown as typeof THREE.Mesh)(
