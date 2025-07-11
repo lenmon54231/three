@@ -4,11 +4,14 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
-import { MeshReflectorMaterial } from '@react-three/drei';
 import { Water2Circle } from '@/components/Water2Circle';
 import hdr from '@/assets/hdr/studio_small_08_1k.hdr';
 import { TextureLoader } from 'three';
 import { useSpring, animated } from '@react-spring/three';
+import { MeshReflectorMaterial } from '@react-three/drei';
+import { Water } from 'three-stdlib';
+import { extend } from '@react-three/fiber';
+extend({ Water });
 
 const SetEnvironment: React.FC = () => {
   const envMap = useLoader(RGBELoader, hdr);
@@ -36,9 +39,10 @@ interface ModelContentProps {
   waterNormals: THREE.Texture;
   carColor: string;
   startAnim?: boolean;
+  animDone?: boolean;
 }
 
-const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, carColor, startAnim = false }) => {
+const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, carColor, startAnim = false, animDone = false }) => {
   const gltf = useLoader(
     GLTFLoader,
     '/su7_car/sm_car.gltf',
@@ -71,32 +75,78 @@ const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, ca
     delay: 0,
   });
 
+  // 长方形底座渐变贴图
+  function createRectGradientTexture(size = 512) {
+    const canvas = document.createElement('canvas');
+    canvas.width = size * 2;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    // 横向渐变，中心亮，边缘暗
+    const gradient = ctx.createLinearGradient(0, size / 2, size * 2, size / 2);
+    gradient.addColorStop(0, '#181a22');
+    gradient.addColorStop(0.5, '#3a4a6a');
+    gradient.addColorStop(1, '#181a22');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size * 2, size);
+    const texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }
+  const rectGradientMap: THREE.Texture | undefined = React.useMemo(() => createRectGradientTexture(512) || undefined, []);
+
+  // 长方形水面对象，始终 useMemo
+  const planeWater = React.useMemo(() => {
+    return new (Water as unknown as typeof THREE.Mesh)(
+      new THREE.PlaneGeometry(20, 6, 128, 128),
+      {
+        textureWidth: 1024,
+        textureHeight: 1024,
+        waterNormals,
+        sunDirection: new THREE.Vector3(1, 1, 1),
+        sunColor: 0xffffff,
+        waterColor: 0xbbeeff,
+        distortionScale: 2.5,
+        fog: false,
+        format: 3001,
+      } as any
+    );
+  }, [waterNormals]);
+
   return (
     <>
-      <group>
-        <animated.primitive object={gltf.scene} scale={[1, 1, 1]} rotation-y={rotY} />
-      </group>
-      {/* 镜面反射圆形底座/水波纹底座（条件渲染，避免 geometry 冲突） */}
-      {isTopView ? (
-        <Water2Circle radius={3.2} waterNormals={waterNormals} />
-      ) : (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-          <circleGeometry args={[3.2, 64]} />
-          <MeshReflectorMaterial
-            blur={[0.5, 0.2]}
-            resolution={1024}
-            mixBlur={0.05}
-            mixStrength={1}
-            roughness={0.1}
-            depthScale={0.5}
-            minDepthThreshold={0.9}
-            maxDepthThreshold={1.1}
-            color="#fff"
-            metalness={0.5}
-            side={THREE.DoubleSide}
+      <animated.group rotation-y={rotY}>
+        <animated.primitive object={gltf.scene} scale={[1, 1, 1]} />
+        {/* 镜面反射圆形底座/水波纹底座（条件渲染，避免 geometry 冲突） */}
+        {isTopView ? (
+          <Water2Circle radius={3.2} waterNormals={waterNormals} />
+        ) : animDone ? (
+          // 动画结束后显示长方形底座
+          <primitive
+            object={planeWater}
+            rotation={[-Math.PI / 2, 0, 0]}
+            position={[0, 0, 0]}
           />
-        </mesh>
-      )}
+        ) : (
+          // 动画未结束时显示圆形底座
+          <mesh position={[0, 0, 0]} receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[3.2, 64]} />
+            <MeshReflectorMaterial
+              blur={[0.5, 0.2]}
+              resolution={1024}
+              mixBlur={0.05}
+              mixStrength={1}
+              roughness={0.1}
+              depthScale={0.5}
+              minDepthThreshold={0.9}
+              maxDepthThreshold={1.1}
+              color="#fff"
+              metalness={0.5}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        )}
+      </animated.group>
       <SetEnvironment />
       {/* 球型展厅空间：大球体，内表面为黑色 */}
       <mesh>

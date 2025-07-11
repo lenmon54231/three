@@ -98,7 +98,7 @@ const ModelViewer: React.FC = () => {
             coneHeight={5.5}
             coneOpacity={0.1}
           />
-          <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} startAnim={startAnim} />
+          <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} startAnim={startAnim} animDone={animDone} />
           <OrbitControls
             target={[0, 0.5, 0]}
             minDistance={3}
