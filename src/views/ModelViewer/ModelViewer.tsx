@@ -14,6 +14,7 @@ import ModelContent from './components/ModelContent';
 import SpotLightWithCone from './components/SpotLightWithCone';
 import { useSpring } from '@react-spring/three';
 import { useThree, useFrame } from '@react-three/fiber';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 
 // 用于将 spring 的 camPos 同步到 three-fiber 默认相机
 const CameraSpringSync: React.FC<{ camPos: any; startAnim: boolean }> = ({ camPos, startAnim }) => {
@@ -90,13 +91,16 @@ const ModelViewer: React.FC = () => {
           {!animDone && <CameraSpringSync camPos={camPos} startAnim={startAnim} />}
           <TopViewDetector onChange={setIsTopView} />
           <ExhibitionLights />
+          <EffectComposer>
+            <Bloom intensity={2.2} luminanceThreshold={0.05} luminanceSmoothing={0.95} />
+          </EffectComposer>
           <SpotLightWithCone
             position={[0, 2.8, 0]}
             target={[0, 0.5, 0]}
             angle={Math.PI / 6}
             color="#fff"
             coneHeight={5.5}
-            coneOpacity={0.1}
+            coneOpacity={0.01}
           />
           <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} startAnim={startAnim} animDone={animDone} />
           <OrbitControls
