@@ -112,7 +112,7 @@ const ModelViewer: React.FC = () => {
             enabled={animDone}
             enableZoom={false}
           />
-          <Sparkles
+          {/* <Sparkles
             count={60}
             speed={1.5}
             size={2}
@@ -120,7 +120,7 @@ const ModelViewer: React.FC = () => {
             opacity={0.8}
             scale={[10, 4, 10]}
             position={[0, 2, 0]}
-          />
+          /> */}
           {isTopView && <Meteors count={16} show={isTopView} />}
         </Canvas>
       </Suspense>
