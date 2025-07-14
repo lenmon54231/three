@@ -95,19 +95,22 @@ const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, ca
   }
  
   // 长方形水面对象，始终 useMemo
-  const planeWater = React.useMemo(() => {
-    return new (Water as unknown as typeof THREE.Mesh)(
+  const planeWater: any = React.useMemo(() => {
+    const gradTex = createRectGradientTexture(512);
+    return new (Water as any)(
       new THREE.PlaneGeometry(20, 6, 128, 128),
       {
         textureWidth: 1024,
         textureHeight: 1024,
         waterNormals,
         sunDirection: new THREE.Vector3(1, 1, 1),
-        sunColor: 0xffffff,
-        waterColor: 0xbbeeff,
-        distortionScale: 2.5,
+        sunColor: 0x222233, // 更暗
+        waterColor: 0x181a22, // 更暗
+        distortionScale: 2.2,
         fog: false,
         format: 3001,
+        map: gradTex, // 叠加暗色渐变贴图
+        alpha: 0.98,
       } as any
     );
   }, [waterNormals]);
@@ -131,15 +134,15 @@ const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, ca
           <mesh position={[0, 0, 0]} receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
             <circleGeometry args={[3.2, 64]} />
             <MeshReflectorMaterial
-              blur={[0.5, 0.2]}
-              resolution={1024}
-              mixBlur={0.05}
-              mixStrength={1}
-              roughness={0.1}
-              depthScale={0.5}
-              minDepthThreshold={0.9}
-              maxDepthThreshold={1.1}
-              color="#fff"
+              blur={[1.2, 0.6]} // 增强模糊
+              resolution={2048}
+              mixBlur={0.18} // 增强边缘柔和
+              mixStrength={2.5} // 增强反射混合
+              roughness={0.18}
+              depthScale={0.7}
+              minDepthThreshold={0.85}
+              maxDepthThreshold={1.15}
+              color="#181a22" // 暗色系
               metalness={0.5}
               side={THREE.DoubleSide}
             />
