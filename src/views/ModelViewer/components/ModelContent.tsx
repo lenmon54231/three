@@ -114,9 +114,9 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
     );
   }, [waterNormals]);
 
-  // 长方形底座颜色渐变动画
+  // 长方形底座颜色渐变动画，依赖 carColor
   const { color: waterColorSpring } = useSpring({
-    color: startAnim ? '#2B95AB' : '#181a22', // 可自定义目标色
+    color: carColor,
     config: { duration: 1000 },
   });
 
