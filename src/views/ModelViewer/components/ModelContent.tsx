@@ -1,16 +1,15 @@
 import React from 'react';
-import { useLoader, useThree } from '@react-three/fiber';
+import { useLoader, useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
-import { Water2Circle } from '@/components/Water2Circle';
 import hdr from '@/assets/hdr/studio_small_08_1k.hdr';
 import { TextureLoader } from 'three';
 import { useSpring, animated } from '@react-spring/three';
-import { MeshReflectorMaterial } from '@react-three/drei';
 import { Water } from 'three-stdlib';
 import { extend } from '@react-three/fiber';
+
 extend({ Water });
 
 const SetEnvironment: React.FC = () => {
@@ -42,7 +41,7 @@ interface ModelContentProps {
   animDone?: boolean;
 }
 
-const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, carColor, startAnim = false, animDone = false }) => {
+const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, startAnim = false }) => {
   const gltf = useLoader(
     GLTFLoader,
     '/su7_car/sm_car.gltf',
@@ -98,7 +97,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, ca
   const planeWater: any = React.useMemo(() => {
     const gradTex = createRectGradientTexture(512);
     return new (Water as any)(
-      new THREE.PlaneGeometry(20, 6, 128, 128),
+      new THREE.PlaneGeometry(5, 2, 128, 128),
       {
         textureWidth: 1024,
         textureHeight: 1024,
@@ -115,39 +114,43 @@ const ModelContent: React.FC<ModelContentProps> = ({ isTopView, waterNormals, ca
     );
   }, [waterNormals]);
 
+  // 长方形底座颜色渐变动画
+  const { color: waterColorSpring } = useSpring({
+    color: startAnim ? '#2B95AB' : '#181a22', // 可自定义目标色
+    config: { duration: 1000 },
+  });
+
+  // 同步 spring color 到 planeWater 的 waterColor
+  useFrame(() => {
+    if (
+      planeWater &&
+      planeWater.material &&
+      planeWater.material.uniforms &&
+      planeWater.material.uniforms.waterColor
+    ) {
+      planeWater.material.uniforms.waterColor.value.set(waterColorSpring.get());
+    }
+  });
+
+  // 长方形底座入场缩放动画
+  const rectBaseSpring = useSpring({
+    scale: startAnim ? 10 : 0,
+    config: { tension: 120, friction: 30 },
+    delay: 200, // 可选，延迟动画
+  });
+
   return (
     <>
       <animated.group rotation-y={rotY}>
         <animated.primitive object={gltf.scene} scale={[1, 1, 1]} />
-        {/* 镜面反射圆形底座/水波纹底座（条件渲染，避免 geometry 冲突） */}
-        {isTopView ? (
-          <Water2Circle radius={3.2} waterNormals={waterNormals} />
-        ) : animDone ? (
-          // 动画结束后显示长方形底座
+        {/* 只保留长方形底座，入场缩放动画 */}
+        <animated.group scale={rectBaseSpring.scale}>
           <primitive
             object={planeWater}
             rotation={[-Math.PI / 2, 0, 0]}
             position={[0, 0, 0]}
           />
-        ) : (
-          // 动画未结束时显示圆形底座
-          <mesh position={[0, 0, 0]} receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
-            <circleGeometry args={[3.2, 64]} />
-            <MeshReflectorMaterial
-              blur={[1.2, 0.6]} // 增强模糊
-              resolution={2048}
-              mixBlur={0.18} // 增强边缘柔和
-              mixStrength={2.5} // 增强反射混合
-              roughness={0.18}
-              depthScale={0.7}
-              minDepthThreshold={0.85}
-              maxDepthThreshold={1.15}
-              color="#181a22" // 暗色系
-              metalness={0.5}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-        )}
+        </animated.group>
       </animated.group>
       <SetEnvironment />
       {/* 球型展厅空间：大球体，内表面为黑色 */}
