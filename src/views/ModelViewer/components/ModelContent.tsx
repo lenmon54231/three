@@ -10,7 +10,8 @@ import { useSpring, animated } from '@react-spring/three';
 import { Water } from 'three-stdlib';
 import { extend } from '@react-three/fiber';
 import StartRoom from './StartRoom';
-import RectWaterBase from './RectWaterBase';
+// import RectWaterBase from './RectWaterBase';
+import Speedup from './Speedup';
 
 extend({ Water });
 
@@ -41,13 +42,13 @@ function flatModel(scene: THREE.Object3D): THREE.Mesh[] {
 
 interface ModelContentProps {
   isTopView?: boolean;
-  waterNormals: THREE.Texture;
+  // waterNormals: THREE.Texture; // 已不再使用
   carColor: string;
   startAnim?: boolean;
   animDone?: boolean;
 }
 
-const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, startAnim = false }) => {
+const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false }) => {
   const gltf = useLoader(
     GLTFLoader,
     '/su7_car/sm_car.gltf',
@@ -63,6 +64,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
   const { camera } = useThree();
   const wheelMeshesRef = useRef<THREE.Mesh[]>([]);
   const [isWheelsRotating, setIsWheelsRotating] = useState(false);
+  const [showSpeedup, setShowSpeedup] = useState(false);
 
   // 相机动画 spring
   const [cameraSpring, api] = useSpring(() => ({
@@ -86,7 +88,11 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
     if (isWheelsRotating) {
       api.start({
         camPos: [9, 2, 0],
-        from: { camPos: [camera.position.x, camera.position.y, camera.position.z] }
+        from: { camPos: [camera.position.x, camera.position.y, camera.position.z] },
+        onRest:()=>{
+          // 展示隧道穿梭效果
+          setShowSpeedup(true);
+        }
       });
     }
   }, [isWheelsRotating, api, camera]);
@@ -146,6 +152,8 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
         <sphereGeometry args={[10, 64, 64]} />
         <meshStandardMaterial color="black" side={THREE.BackSide} />
       </mesh>
+      {/* {showSpeedup && <Speedup />} */}
+      <Speedup />
     </>
   );
 };

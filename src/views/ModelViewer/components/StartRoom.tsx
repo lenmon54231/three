@@ -38,8 +38,8 @@ const StartRoom: React.FC = () => {
   useEffect(() => {
     const meshes = flatModel(gltf.scene);
     // 不显示 light 相关 mesh
-    meshes.forEach(mesh => {
-      if (mesh.name === 'lightTop' || mesh.name.includes('light')) {
+    meshes.filter(Boolean).forEach(mesh => {
+      if (mesh && mesh.name && (mesh.name === 'lightTop' || mesh.name.includes('light'))) {
         mesh.visible = false;
       }
     });
