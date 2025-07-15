@@ -80,7 +80,7 @@ const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, star
       <primitive
         object={planeWater}
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.01, 0]}
+        position={[0, 0, 0]}
       />
     </animated.group>
   );
