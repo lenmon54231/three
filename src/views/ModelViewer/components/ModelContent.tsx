@@ -1,25 +1,30 @@
 import React from 'react';
-import { useLoader, useThree, useFrame } from '@react-three/fiber';
+import { useLoader, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
-import hdr from '@/assets/hdr/studio_small_08_1k.hdr';
+import hdr from '@/assets/hdr/evening_museum_courtyard_1k.hdr';
 import { TextureLoader } from 'three';
 import { useSpring, animated } from '@react-spring/three';
 import { Water } from 'three-stdlib';
 import { extend } from '@react-three/fiber';
+import StartRoom from './StartRoom';
 
 extend({ Water });
 
-const SetEnvironment: React.FC = () => {
-  const envMap = useLoader(RGBELoader, hdr);
-  const { scene } = useThree();
+const SetEnvironment: React.FC<{ envMap: THREE.Texture, gltfScene: THREE.Object3D }> = ({ envMap, gltfScene }) => {
   React.useEffect(() => {
     envMap.mapping = THREE.EquirectangularReflectionMapping;
-    scene.environment = envMap;
-    // scene.background = envMap;
-  }, [envMap, scene]);
+    gltfScene.traverse((child: any) => {
+      if (child.isMesh && child.material && 'envMap' in child.material) {
+        // 只给 mesh 设置环境贴图，不替换材质类型
+        child.material.envMap = envMap;
+        child.material.envMapIntensity = 1.5;
+        child.material.needsUpdate = true;
+      }
+    });
+  }, [envMap, gltfScene]);
   return null;
 };
 
@@ -52,12 +57,16 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
   const aoMap = useLoader(TextureLoader, AO_TEXTURE_PATH);
   aoMap.channel = 1;
   aoMap.flipY = false;
+  // 加载环境贴图
+  const envMap = useLoader(RGBELoader, hdr);
+
   React.useEffect(() => {
     const meshes = flatModel(gltf.scene);
     const body = meshes[2] as THREE.Mesh;
-    const bodyMat = body.material as THREE.MeshStandardMaterial;
-    bodyMat.envMapIntensity = 4;
-    bodyMat.color = new THREE.Color(carColor);
+    if (body && body.material) {
+      (body.material as THREE.MeshPhysicalMaterial).color = new THREE.Color(carColor);
+      (body.material as THREE.MeshPhysicalMaterial).needsUpdate = true;
+    }
     meshes.forEach((mesh) => {
       if (mesh.isMesh && mesh.material) {
         const mat = mesh.material as THREE.MeshStandardMaterial;
@@ -134,7 +143,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
 
   // 长方形底座入场缩放动画
   const rectBaseSpring = useSpring({
-    scale: startAnim ? 10 : 0,
+    scale: startAnim ? 1 : 0,
     config: { tension: 120, friction: 30 },
     delay: 200, // 可选，延迟动画
   });
@@ -143,18 +152,17 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
     <>
       <animated.group rotation-y={rotY}>
         <animated.primitive object={gltf.scene} scale={[1, 1, 1]} />
-        {/* 只保留长方形底座，入场缩放动画 */}
-        <animated.group scale={rectBaseSpring.scale}>
+        <StartRoom />
+         {/* <animated.group scale={rectBaseSpring.scale}>
           <primitive
             object={planeWater}
             rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, 0, 0]}
+            position={[0, 0.01, 0]}
           />
-        </animated.group>
+        </animated.group> */}
       </animated.group>
-      <SetEnvironment />
-      {/* 球型展厅空间：大球体，内表面为黑色 */}
-      <mesh>
+       <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />
+       <mesh>
         <sphereGeometry args={[10, 64, 64]} />
         <meshStandardMaterial color="black" side={THREE.BackSide} />
       </mesh>

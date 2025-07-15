@@ -13,6 +13,7 @@ import Meteors from './components/Meteors';
 import ModelContent from './components/ModelContent';
 import { useSpring } from '@react-spring/three';
 import { useThree, useFrame } from '@react-three/fiber';
+import StartRoom from './components/StartRoom';
 
 // 用于将 spring 的 camPos 同步到 three-fiber 默认相机
 const CameraSpringSync: React.FC<{ camPos: any; startAnim: boolean }> = ({ camPos, startAnim }) => {
@@ -85,10 +86,15 @@ const ModelViewer: React.FC = () => {
           camera={{ position: [6, 3, 6], fov: 45 }}
           dpr={[1, 1.5]}
           shadows
+          onCreated={({ gl }) => {
+            gl.toneMapping = THREE.ACESFilmicToneMapping;
+            gl.outputColorSpace = THREE.SRGBColorSpace;
+          }}
         >
           {!animDone && <CameraSpringSync camPos={camPos} startAnim={startAnim} />}
           <TopViewDetector onChange={setIsTopView} />
-          <ExhibitionLights />
+          {/* <ExhibitionLights /> */}
+          <StartRoom />
           <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} startAnim={startAnim} animDone={animDone} />
           <OrbitControls
             target={[0, 0.5, 0]}
