@@ -84,10 +84,12 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
   // 监听 isWheelsRotating 变化，触发相机动画
   useEffect(() => {
     if (isWheelsRotating) {
-      // 目标位置：模型左后方（可根据实际场景调整）
-      api.start({ camPos: [7, 2, -2.5] });
+      api.start({
+        camPos: [9, 2, 0],
+        from: { camPos: [camera.position.x, camera.position.y, camera.position.z] }
+      });
     }
-  }, [isWheelsRotating, api]);
+  }, [isWheelsRotating, api, camera]);
 
   // 在 useFrame 中同步 spring 到 camera
   useFrame(() => {
