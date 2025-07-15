@@ -4,13 +4,13 @@ import { shaderMaterial } from '@react-three/drei';
 
 // @ts-expect-error Vite/webpack 需要 raw-loader 支持 glsl 导入
 import vertexShader from '@/assets/shaders/speedup.vert';
-// @ts-expect-error Vite/webpack 需要 raw-loader 支持 glsl 导入
-import fragmentShader from '@/assets/shaders/speedup.frag';
+ // import fragmentShader from '@/assets/shaders/speedup.frag';
+import speedupFrag from '@/assets/shaders/speedup.frag.ts';
 
 const SpeedupMaterial = shaderMaterial(
   { uTime: 0, uSpeedFactor: 1.0 },
   vertexShader,
-  fragmentShader
+  speedupFrag
 );
 extend({ SpeedupMaterial });
 
