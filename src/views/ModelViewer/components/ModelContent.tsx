@@ -1,5 +1,5 @@
-import React from 'react';
-import { useLoader, useFrame } from '@react-three/fiber';
+import React, { useRef, useState, useEffect } from 'react';
+import { useLoader, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -10,6 +10,7 @@ import { useSpring, animated } from '@react-spring/three';
 import { Water } from 'three-stdlib';
 import { extend } from '@react-three/fiber';
 import StartRoom from './StartRoom';
+import RectWaterBase from './RectWaterBase';
 
 extend({ Water });
 
@@ -59,6 +60,43 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
   aoMap.flipY = false;
   // 加载环境贴图
   const envMap = useLoader(RGBELoader, hdr);
+  const { camera } = useThree();
+  const wheelMeshesRef = useRef<THREE.Mesh[]>([]);
+  const [isWheelsRotating, setIsWheelsRotating] = useState(false);
+
+  // 相机动画 spring
+  const [cameraSpring, api] = useSpring(() => ({
+    camPos: [camera.position.x, camera.position.y, camera.position.z],
+    config: { mass: 1, tension: 120, friction: 32 },
+  }));
+
+  // 监听鼠标滚轮下滑事件
+  useEffect(() => {
+    const handleWheel = (event: WheelEvent) => {
+      if (event.deltaY > 0) {
+        setIsWheelsRotating(true);
+      }
+    };
+    window.addEventListener('wheel', handleWheel);
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, []);
+
+  // 监听 isWheelsRotating 变化，触发相机动画
+  useEffect(() => {
+    if (isWheelsRotating) {
+      // 目标位置：模型左后方（可根据实际场景调整）
+      api.start({ camPos: [7, 2, -2.5] });
+    }
+  }, [isWheelsRotating, api]);
+
+  // 在 useFrame 中同步 spring 到 camera
+  useFrame(() => {
+    if (isWheelsRotating) {
+      const pos = cameraSpring.camPos.get();
+      camera.position.set(pos[0], pos[1], pos[2]);
+      camera.lookAt(0, 0, 0);
+    }
+  });
 
   React.useEffect(() => {
     const meshes = flatModel(gltf.scene);
@@ -73,7 +111,18 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
         mat.aoMap = aoMap;
       }
     });
+    // 只选中名称为 'Wheel001' 和 'Wheel002' 的 mesh
+    wheelMeshesRef.current = meshes.filter(mesh => mesh.name === 'Wheel001' || mesh.name === 'Wheel002');
   }, [gltf, aoMap, carColor]);
+
+  // 让 Wheel001 和 Wheel002 绕自身旋转（仅在 isWheelsRotating 为 true 时）
+  useFrame((_, delta) => {
+    if (isWheelsRotating) {
+      wheelMeshesRef.current.forEach(mesh => {
+        mesh.rotation.z -= 2 * Math.PI * delta * 0.5;
+      });
+    }
+  });
 
   // 入场运镜动画
   const { rotY } = useSpring({
@@ -83,86 +132,15 @@ const ModelContent: React.FC<ModelContentProps> = ({ waterNormals, carColor, sta
     delay: 0,
   });
 
-  // 长方形底座渐变贴图
-  function createRectGradientTexture(size = 512) {
-    const canvas = document.createElement('canvas');
-    canvas.width = size * 2;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    // 横向渐变，中心亮，边缘暗
-    const gradient = ctx.createLinearGradient(0, size / 2, size * 2, size / 2);
-    gradient.addColorStop(0, '#181a22');
-    gradient.addColorStop(0.5, '#3a4a6a');
-    gradient.addColorStop(1, '#181a22');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, size * 2, size);
-    const texture = new THREE.Texture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-  }
- 
-  // 长方形水面对象，始终 useMemo
-  const planeWater: any = React.useMemo(() => {
-    const gradTex = createRectGradientTexture(512);
-    return new (Water as any)(
-      new THREE.PlaneGeometry(5, 2, 128, 128),
-      {
-        textureWidth: 1024,
-        textureHeight: 1024,
-        waterNormals,
-        sunDirection: new THREE.Vector3(1, 1, 1),
-        sunColor: 0x222233, // 更暗
-        waterColor: 0x181a22, // 更暗
-        distortionScale: 2.2,
-        fog: false,
-        format: 3001,
-        map: gradTex, // 叠加暗色渐变贴图
-        alpha: 0.98,
-      } as any
-    );
-  }, [waterNormals]);
-
-  // 长方形底座颜色渐变动画，依赖 carColor
-  const { color: waterColorSpring } = useSpring({
-    color: carColor,
-    config: { duration: 1000 },
-  });
-
-  // 同步 spring color 到 planeWater 的 waterColor
-  useFrame(() => {
-    if (
-      planeWater &&
-      planeWater.material &&
-      planeWater.material.uniforms &&
-      planeWater.material.uniforms.waterColor
-    ) {
-      planeWater.material.uniforms.waterColor.value.set(waterColorSpring.get());
-    }
-  });
-
-  // 长方形底座入场缩放动画
-  const rectBaseSpring = useSpring({
-    scale: startAnim ? 1 : 0,
-    config: { tension: 120, friction: 30 },
-    delay: 200, // 可选，延迟动画
-  });
-
   return (
     <>
       <animated.group rotation-y={rotY}>
-        <animated.primitive object={gltf.scene} scale={[1, 1, 1]} />
+        <primitive object={gltf.scene} scale={[1, 1, 1]} />
         <StartRoom />
-         {/* <animated.group scale={rectBaseSpring.scale}>
-          <primitive
-            object={planeWater}
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, 0.01, 0]}
-          />
-        </animated.group> */}
+        {/* <RectWaterBase waterNormals={waterNormals} color={carColor} startAnim={startAnim} /> */}
       </animated.group>
-       <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />
-       <mesh>
+      <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />
+      <mesh>
         <sphereGeometry args={[10, 64, 64]} />
         <meshStandardMaterial color="black" side={THREE.BackSide} />
       </mesh>
