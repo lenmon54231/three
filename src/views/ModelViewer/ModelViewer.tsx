@@ -37,10 +37,11 @@ const ModelViewer: React.FC = () => {
   const [carColor, setCarColor] = React.useState('#2B95AB');
 
   // 父组件提前加载 waterNormals 贴图
-  const waterNormals = useLoader(
-    THREE.TextureLoader,
-    waterNormalsImg
-  );
+  // 删除未用 waterNormals
+  // const waterNormals = useLoader(
+  //   THREE.TextureLoader,
+  //   waterNormalsImg
+  // );
 
   const [startAnim, setStartAnim] = React.useState(false);
   const [loadingDone, setLoadingDone] = React.useState(false);

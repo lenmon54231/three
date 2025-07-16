@@ -144,9 +144,6 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
     from: { rotY: -Math.PI * 3 / 4 },
     config: { mass: 1.5, tension: 40, friction: 40 },
     delay: 0,
-    onRest: () => {
-      setShowSpeedup(true);
-    },
   });
 
   return (
