@@ -87,7 +87,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   useEffect(() => {
     if (isWheelsRotating) {
       api.start({
-        camPos: [9, 2, 0],
+        camPos: [0, 2, -6],
         from: { camPos: [camera.position.x, camera.position.y, camera.position.z] },
       });
     }
@@ -123,7 +123,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   useFrame((_, delta) => {
     if (isWheelsRotating) {
       wheelMeshesRef.current.forEach(mesh => {
-        mesh.rotation.z -= 2 * Math.PI * delta * 0.5;
+        mesh.rotation.z -= 2 * Math.PI * delta * 1.5;
       });
     }
   });

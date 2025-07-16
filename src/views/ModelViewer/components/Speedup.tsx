@@ -1,9 +1,10 @@
-import React, { useRef } from 'react';
-import { useFrame, extend } from '@react-three/fiber';
-import { shaderMaterial } from '@react-three/drei';
+import React, { useRef, useEffect } from 'react';
+import { useLoader, extend } from '@react-three/fiber';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import * as THREE from 'three';
+import { shaderMaterial } from '@react-three/drei';
 
-// @ts-expect-error Vite/webpack 需要 raw-loader 支持 glsl 导入
+// @ts-expect-error: raw-loader glsl import for shader
 import vertexShader from '@/assets/shaders/speedup.vert';
 import speedupFrag from '@/assets/shaders/speedup.frag.ts';
 
@@ -23,30 +24,32 @@ declare global {
 }
 
 const Speedup: React.FC = () => {
+  const gltf = useLoader(GLTFLoader, '/su7_car/sm_speedup.gltf');
   const materialRef = useRef<any>(null);
-  useFrame((_, delta) => {
-    if (materialRef.current) {
-      materialRef.current.uTime += delta;
-    }
-  });
-  // 圆柱体参数，可根据需要调整
-  const radius = 3; // 半径
-  const height = 12; // 高度
-  const radialSegments = 128; // 圆周分段数，越大越圆滑
-  const heightSegments = 1;
-  return (
-    <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-      <cylinderGeometry
-        args={[radius, radius, height, radialSegments, heightSegments, true]} // true: openEnded
-      />
-      <speedupMaterial
-        ref={materialRef}
-        uSpeedFactor={1.0}
-        side={THREE.DoubleSide} // 让材质渲染在内壁
-        transparent
-      />
-    </mesh>
-  );
+
+  // 动画驱动 uTime
+  useEffect(() => {
+    let frameId: number;
+    const animate = (time: number) => {
+      if (materialRef.current) {
+        materialRef.current.uTime = time * 0.001;
+      }
+      frameId = requestAnimationFrame(animate);
+    };
+    frameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
+  // 替换目标 mesh 的材质
+  useEffect(() => {
+    gltf.scene.traverse((child: any) => {
+      if (child.isMesh) {
+        child.material = new THREE.MeshStandardMaterial({ color: 'red' });
+      }
+    });
+  }, [gltf]);
+
+  return <primitive object={gltf.scene} />;
 };
 
 export default Speedup; 
