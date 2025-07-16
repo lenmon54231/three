@@ -89,10 +89,6 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
       api.start({
         camPos: [9, 2, 0],
         from: { camPos: [camera.position.x, camera.position.y, camera.position.z] },
-        onRest:()=>{
-          // 展示隧道穿梭效果
-          setShowSpeedup(true);
-        }
       });
     }
   }, [isWheelsRotating, api, camera]);
