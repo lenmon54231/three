@@ -4,7 +4,6 @@ import { OrbitControls } from '@react-three/drei';
 import { Canvas, useLoader } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
-import ExhibitionLights from './components/ExhibitionLights';
 import CustomStats from '@/components/CustomStats/CustomStats';
 import { TopViewDetector } from '@/components/TopViewDetector';
 import waterNormalsImg from '@/assets/image/water/waternormals.jpg';
@@ -13,7 +12,6 @@ import Meteors from './components/Meteors';
 import ModelContent from './components/ModelContent';
 import { useSpring } from '@react-spring/three';
 import { useThree, useFrame } from '@react-three/fiber';
-import StartRoom from './components/StartRoom';
 
 // 用于将 spring 的 camPos 同步到 three-fiber 默认相机
 const CameraSpringSync: React.FC<{ camPos: any; startAnim: boolean }> = ({ camPos, startAnim }) => {
@@ -94,7 +92,7 @@ const ModelViewer: React.FC = () => {
           {!animDone && <CameraSpringSync camPos={camPos} startAnim={startAnim} />}
           <TopViewDetector onChange={setIsTopView} />
           {/* <ExhibitionLights /> */}
-           <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} startAnim={startAnim} animDone={animDone} />
+           <ModelContent isTopView={isTopView} carColor={carColor} startAnim={startAnim} animDone={animDone} />
           <OrbitControls
             target={[0, 0.5, 0]}
             minPolarAngle={1.214}
