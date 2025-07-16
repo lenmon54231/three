@@ -94,12 +94,9 @@ const ModelViewer: React.FC = () => {
           {!animDone && <CameraSpringSync camPos={camPos} startAnim={startAnim} />}
           <TopViewDetector onChange={setIsTopView} />
           {/* <ExhibitionLights /> */}
-          <StartRoom />
-          <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} startAnim={startAnim} animDone={animDone} />
+           <ModelContent isTopView={isTopView} waterNormals={waterNormals} carColor={carColor} startAnim={startAnim} animDone={animDone} />
           <OrbitControls
             target={[0, 0.5, 0]}
-            minDistance={3}
-            maxDistance={8}
             minPolarAngle={1.214}
             maxPolarAngle={1.214}
             enabled={animDone}

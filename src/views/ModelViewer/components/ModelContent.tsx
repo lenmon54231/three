@@ -87,7 +87,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   useEffect(() => {
     if (isWheelsRotating) {
       api.start({
-        camPos: [0, 2, -6],
+        camPos: [4, 3, -12],
         from: { camPos: [camera.position.x, camera.position.y, camera.position.z] },
       });
     }
