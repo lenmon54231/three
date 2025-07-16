@@ -61,6 +61,13 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   aoMap.flipY = false;
   // 加载环境贴图
   const envMap = useLoader(RGBELoader, hdr);
+  const speedupGltf = useLoader(
+    GLTFLoader,
+    '/su7_car/sm_speedup.gltf',
+    loader => {
+      loader.setMeshoptDecoder(MeshoptDecoder);
+    }
+  );
   const { camera } = useThree();
   const wheelMeshesRef = useRef<THREE.Mesh[]>([]);
   const [isWheelsRotating, setIsWheelsRotating] = useState(false);
@@ -89,6 +96,9 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
       api.start({
         camPos: [4, 3, -12],
         from: { camPos: [camera.position.x, camera.position.y, camera.position.z] },
+        onRest:()=>{
+          setShowSpeedup(true)
+        }
       });
     }
   }, [isWheelsRotating, api, camera]);
@@ -123,7 +133,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   useFrame((_, delta) => {
     if (isWheelsRotating) {
       wheelMeshesRef.current.forEach(mesh => {
-        mesh.rotation.z -= 2 * Math.PI * delta * 1.5;
+        mesh.rotation.z -= 2 * Math.PI * delta * 2.5;
       });
     }
   });
@@ -134,23 +144,20 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
     from: { rotY: -Math.PI * 3 / 4 },
     config: { mass: 1.5, tension: 40, friction: 40 },
     delay: 0,
+    onRest: () => {
+      setShowSpeedup(true);
+    },
   });
 
   return (
     <>
       <animated.group rotation-y={rotY}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
-        <StartRoom />
-        <Speedup />
-
+        {!showSpeedup && <StartRoom />}
+        {showSpeedup && <Speedup gltf={speedupGltf} />}
         {/* <RectWaterBase waterNormals={waterNormals} color={carColor} startAnim={startAnim} /> */}
       </animated.group>
       <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />
-      <mesh>
-        <sphereGeometry args={[10, 64, 64]} />
-        <meshStandardMaterial color="black" side={THREE.BackSide} />
-      </mesh>
-      {/* {showSpeedup && <Speedup />} */}
     </>
   );
 };
