@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-// @ts-ignore
+// @ts-expect-error: DRACOLoader type declaration missing in three/examples/jsm/loaders/DRACOLoader
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import * as THREE from 'three';
 

@@ -1,12 +1,11 @@
 import BackButton from '@/components/BackButton/BackButton';
 import Loading from '@/components/Loading/Loading';
 import { OrbitControls } from '@react-three/drei';
-import { Canvas, useLoader } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import React, { Suspense } from 'react';
 import * as THREE from 'three';
 import CustomStats from '@/components/CustomStats/CustomStats';
 import { TopViewDetector } from '@/components/TopViewDetector';
-import waterNormalsImg from '@/assets/image/water/waternormals.jpg';
 import ColorButtons from './components/ColorButtons';
 import Meteors from './components/Meteors';
 import ModelContent from './components/ModelContent';
