@@ -141,6 +141,8 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
       <animated.group rotation-y={rotY}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
         <StartRoom />
+        <Speedup />
+
         {/* <RectWaterBase waterNormals={waterNormals} color={carColor} startAnim={startAnim} /> */}
       </animated.group>
       <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />
@@ -149,7 +151,6 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
         <meshStandardMaterial color="black" side={THREE.BackSide} />
       </mesh>
       {/* {showSpeedup && <Speedup />} */}
-      <Speedup />
     </>
   );
 };
