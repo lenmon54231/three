@@ -9,24 +9,6 @@ import { TopViewDetector } from '@/components/TopViewDetector';
 import ColorButtons from './components/ColorButtons';
 import Meteors from './components/Meteors';
 import ModelContent from './components/ModelContent';
-import { useSpring } from '@react-spring/three';
-import { useThree, useFrame } from '@react-three/fiber';
-
-// 用于将 spring 的 camPos 同步到 three-fiber 默认相机
-const CameraSpringSync: React.FC<{ camPos: any; startAnim: boolean }> = ({ camPos, startAnim }) => {
-  const { camera } = useThree();
-  useFrame(() => {
-    if (startAnim && camPos.get) {
-      const [x, y, z] = camPos.get();
-      camera.position.set(x, y, z);
-    } else {
-      camera.position.set(6, 3, 6);
-    }
-    camera.lookAt(0, 0.5, 0); // 保证朝向和 OrbitControls 的 target 一致
-    camera.updateProjectionMatrix();
-  });
-  return null;
-};
 
 const ModelViewer: React.FC = () => {
   // 只在顶部视角显示流星
@@ -45,12 +27,6 @@ const ModelViewer: React.FC = () => {
   const [startAnim, setStartAnim] = React.useState(false);
   const [loadingDone, setLoadingDone] = React.useState(false);
   const [animDone, setAnimDone] = React.useState(false);
-
-  // 相机运镜动画
-  const { camPos } = useSpring({
-    camPos: startAnim ? [3.6, 2.4, 3.6] : [6, 3, 6],
-    config: { mass: 1, tension: 80, friction: 20 },
-  });
 
   // 监听 Suspense 加载完成，800ms 后触发动画
   React.useEffect(() => {
@@ -81,7 +57,7 @@ const ModelViewer: React.FC = () => {
       <ColorButtons onChange={setCarColor} />
       <Suspense fallback={<Loading />}>
         <Canvas
-          camera={{ fov: 45 }}
+          camera={{ position: [6, 3, 6], fov: 50 }}
           dpr={[1, 1.5]}
           shadows
           onCreated={({ gl }) => {
@@ -89,16 +65,16 @@ const ModelViewer: React.FC = () => {
             gl.outputColorSpace = THREE.SRGBColorSpace;
           }}
         >
-          {!animDone && <CameraSpringSync camPos={camPos} startAnim={startAnim} />}
           <TopViewDetector onChange={setIsTopView} />
           {/* <ExhibitionLights /> */}
-           <ModelContent isTopView={isTopView} carColor={carColor} startAnim={startAnim} animDone={animDone} />
+           <ModelContent isTopView={isTopView} carColor={carColor} startAnim={startAnim}  />
           <OrbitControls
-            target={[0, 0.5, 0]}
-            minPolarAngle={1.214}
+            target={[0, 0, 0]}
             maxPolarAngle={1.214}
-            enabled={animDone}
+            enabled={true}
             enableZoom={false}
+            enableRotate={animDone}
+            enablePan={animDone}
           />
           {/* <Sparkles
             count={60}

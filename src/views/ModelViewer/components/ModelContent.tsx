@@ -45,7 +45,6 @@ interface ModelContentProps {
   // waterNormals: THREE.Texture; // 已不再使用
   carColor: string;
   startAnim?: boolean;
-  animDone?: boolean;
 }
 
 const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false }) => {
@@ -104,13 +103,6 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
     }
   }, [isWheelsRotating, camera]);
 
-  // 在 useFrame 中同步 spring 到 camera
-  useFrame(() => {
-    // 这里已不需要同步 cameraSpring.camPos
-    // camera.position 已由 tween.js 动画更新，无需额外处理
-    camera.lookAt(0, 0, 0);
-  });
-
   React.useEffect(() => {
     const meshes = flatModel(gltf.scene);
     const body = meshes[2] as THREE.Mesh;
@@ -161,6 +153,27 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
 
   useFrame(() => {
     tweenGroup.update();
+  });
+
+  // camera tween 动画逻辑
+  const cameraTweenGroup = useRef(new TWEEN.Group()).current;
+
+  useEffect(() => {
+    if (startAnim) {
+      const from = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+      const to = { x: 3.6, y: 2.4, z: 3.6 };
+      new TWEEN.Tween(from, cameraTweenGroup)
+        .to(to, 1000)
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .onUpdate(() => {
+          camera.position.set(from.x, from.y, from.z);
+        })
+        .start();
+    }
+  }, [startAnim, camera, cameraTweenGroup]);
+
+  useFrame(() => {
+    cameraTweenGroup.update();
   });
 
   return (
