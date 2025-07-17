@@ -46,10 +46,9 @@ interface ModelContentProps {
   carColor: string;
   startAnim?: boolean;
   animDone?: boolean;
-  controlsRef?: React.RefObject<any>;
-}
+ }
 
-const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false, controlsRef }) => {
+const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false }) => {
   const gltf = useLoader(
     GLTFLoader,
     '/su7_car/sm_car.gltf',
@@ -93,7 +92,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   useEffect(() => {
     if (isWheelsRotating) {
       const from = { camPos: [camera.position.x, camera.position.y, camera.position.z] };
-      const to = { camPos: [1, 2, -6] };
+      const to = { camPos: [4, 2, -6] };
       new TWEEN.Tween(from, wheelsTweenGroup)
         .to(to, 1000)
         .easing(TWEEN.Easing.Quadratic.Out)
@@ -104,9 +103,6 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
         .onComplete(() => {
           setShowSpeedup(true);
           camera.up.set(0, 1, 0);
-          if (controlsRef && controlsRef.current) {
-            controlsRef.current.update();
-          }
         })
         .start();
     }
