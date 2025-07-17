@@ -57,7 +57,7 @@ const ModelViewer: React.FC = () => {
       <ColorButtons onChange={setCarColor} />
       <Suspense fallback={<Loading />}>
         <Canvas
-          camera={{ position: [6, 3, 6], fov: 50 }}
+          camera={{ position: [6, 3, 6], fov: 50, near: 0.1, far: 2000 }}
           dpr={[1, 1.5]}
           shadows
           onCreated={({ gl }) => {

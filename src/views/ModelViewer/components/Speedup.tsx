@@ -40,7 +40,7 @@ const SpeedupModel: React.FC<SpeedupModelProps> = ({ gltf }) => {
   if (!gltf) return null;
 
   return (
-    <group position={[0, -3, 0]} rotation={[0, Math.PI, 0]}>
+    <group position={[0, -9, 0]} rotation={[0, Math.PI, 0]} scale={[1,2,2]}>
       <primitive object={gltf.scene} />
       {/* @ts-expect-error speedupMaterial is a custom JSX tag for three-fiber material */}
       <speedupMaterial ref={materialRef} uSpeedFactor={1.0} side={THREE.DoubleSide} transparent />

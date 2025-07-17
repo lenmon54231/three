@@ -85,11 +85,14 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   }, []);
 
   // 监听 isWheelsRotating 变化，触发相机动画
+  // 新建 wheelsTweenGroup 实例
+  const wheelsTweenGroup = useRef(new TWEEN.Group()).current;
+
   useEffect(() => {
     if (isWheelsRotating) {
       const from = { camPos: [camera.position.x, camera.position.y, camera.position.z] };
-      const to = { camPos: [-2, 4, 5] };
-      new TWEEN.Tween(from)
+      const to = { camPos: [1, 2, -6] };
+      new TWEEN.Tween(from, wheelsTweenGroup)
         .to(to, 1000)
         .easing(TWEEN.Easing.Quadratic.Out)
         .onUpdate(() => {
@@ -101,7 +104,11 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
         })
         .start();
     }
-  }, [isWheelsRotating, camera]);
+  }, [isWheelsRotating, camera, wheelsTweenGroup]);
+
+  useFrame(() => {
+    wheelsTweenGroup.update();
+  });
 
   React.useEffect(() => {
     const meshes = flatModel(gltf.scene);
@@ -180,7 +187,8 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
     <>
       <group ref={groupRef}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
-        {!showSpeedup && <StartRoom />}
+        {/* {!showSpeedup && <StartRoom />} */}
+        <StartRoom />
         {showSpeedup && <Speedup gltf={speedupGltf} />}
         {/* <RectWaterBase waterNormals={waterNormals} color={carColor} startAnim={startAnim} /> */}
       </group>
