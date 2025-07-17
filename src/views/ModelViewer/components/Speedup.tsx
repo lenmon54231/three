@@ -14,14 +14,6 @@ const SpeedupMaterial = shaderMaterial(
 );
 extend({ SpeedupMaterial });
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      speedupMaterial: any;
-    }
-  }
-}
-
 interface SpeedupModelProps {
   gltf: any;
 }

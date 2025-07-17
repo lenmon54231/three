@@ -17,14 +17,6 @@ const SpeedupMaterial = shaderMaterial(
 );
 extend({ SpeedupMaterial });
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      speedupMaterial: any;
-    }
-  }
-}
-
 const SpeedupModel: React.FC = () => {
   const gltf = useLoader(
     GLTFLoader,
