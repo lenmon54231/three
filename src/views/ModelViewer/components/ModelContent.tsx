@@ -45,9 +45,11 @@ interface ModelContentProps {
   // waterNormals: THREE.Texture; // 已不再使用
   carColor: string;
   startAnim?: boolean;
+  animDone?: boolean;
+  controlsRef?: React.RefObject<any>;
 }
 
-const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false }) => {
+const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false, controlsRef }) => {
   const gltf = useLoader(
     GLTFLoader,
     '/su7_car/sm_car.gltf',
@@ -101,6 +103,10 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
         })
         .onComplete(() => {
           setShowSpeedup(true);
+          camera.up.set(0, 1, 0);
+          if (controlsRef && controlsRef.current) {
+            controlsRef.current.update();
+          }
         })
         .start();
     }

@@ -2,7 +2,7 @@ import BackButton from '@/components/BackButton/BackButton';
 import Loading from '@/components/Loading/Loading';
 import { OrbitControls } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
-import React, { Suspense } from 'react';
+import React, { Suspense, useRef } from 'react';
 import * as THREE from 'three';
 import CustomStats from '@/components/CustomStats/CustomStats';
 import { TopViewDetector } from '@/components/TopViewDetector';
@@ -27,6 +27,8 @@ const ModelViewer: React.FC = () => {
   const [startAnim, setStartAnim] = React.useState(false);
   const [loadingDone, setLoadingDone] = React.useState(false);
   const [animDone, setAnimDone] = React.useState(false);
+
+  const controlsRef = useRef();
 
   // 监听 Suspense 加载完成，800ms 后触发动画
   React.useEffect(() => {
@@ -67,10 +69,11 @@ const ModelViewer: React.FC = () => {
         >
           <TopViewDetector onChange={setIsTopView} />
           {/* <ExhibitionLights /> */}
-           <ModelContent isTopView={isTopView} carColor={carColor} startAnim={startAnim}  />
+           <ModelContent controlsRef={controlsRef} isTopView={isTopView} carColor={carColor} startAnim={startAnim} animDone={animDone} />
           <OrbitControls
+            ref={controlsRef}
             target={[0, 0, 0]}
-            maxPolarAngle={1.214}
+            enabled={true}
             enableZoom={false}
             enableRotate={animDone}
             enablePan={animDone}
