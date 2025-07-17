@@ -71,7 +71,6 @@ const ModelViewer: React.FC = () => {
           <OrbitControls
             target={[0, 0, 0]}
             maxPolarAngle={1.214}
-            enabled={true}
             enableZoom={false}
             enableRotate={animDone}
             enablePan={animDone}
