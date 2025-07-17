@@ -10,12 +10,12 @@ import { shaderMaterial } from '@react-three/drei';
 import vertexShader from '@/assets/shaders/speedup.vert';
 import speedupFrag from '@/assets/shaders/speedup.frag.ts';
 
-const SpeedupMaterial = shaderMaterial(
+const speedupMaterial = shaderMaterial(
   { uTime: 0, uSpeedFactor: 1.0 },
   vertexShader,
   speedupFrag
 );
-extend({ SpeedupMaterial });
+extend({ speedupMaterial });
 
 const SpeedupModel: React.FC = () => {
   const gltf = useLoader(
@@ -47,6 +47,7 @@ const SpeedupModel: React.FC = () => {
   return (
     <>
       <primitive object={gltf.scene} />
+      {/* @ts-expect-error speedupMaterial is a custom JSX tag for three-fiber material */}
       <speedupMaterial ref={materialRef} uSpeedFactor={1.0} side={THREE.DoubleSide} transparent />
     </>
   );
