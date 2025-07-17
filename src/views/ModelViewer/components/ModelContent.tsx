@@ -6,12 +6,12 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import hdr from '@/assets/hdr/evening_museum_courtyard_1k.hdr';
 import { TextureLoader } from 'three';
-import { useSpring, animated } from '@react-spring/three';
 import { Water } from 'three-stdlib';
 import { extend } from '@react-three/fiber';
 import StartRoom from './StartRoom';
 // import RectWaterBase from './RectWaterBase';
 import Speedup from './Speedup';
+import * as TWEEN from '@tweenjs/tween.js';
 
 extend({ Water });
 
@@ -72,12 +72,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   const wheelMeshesRef = useRef<THREE.Mesh[]>([]);
   const [isWheelsRotating, setIsWheelsRotating] = useState(false);
   const [showSpeedup, setShowSpeedup] = useState(false);
-
-  // 相机动画 spring
-  const [cameraSpring, api] = useSpring(() => ({
-    camPos: [camera.position.x, camera.position.y, camera.position.z],
-    config: { mass: 1, tension: 120, friction: 32 },
-  }));
+  const groupRef = useRef<THREE.Group>(null);
 
   // 监听鼠标滚轮下滑事件
   useEffect(() => {
@@ -93,23 +88,27 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   // 监听 isWheelsRotating 变化，触发相机动画
   useEffect(() => {
     if (isWheelsRotating) {
-      api.start({
-        camPos: [-2, 4, 5],
-        from: { camPos: [camera.position.x, camera.position.y, camera.position.z] },
-        onRest:()=>{
-          setShowSpeedup(true)
-        }
-      });
+      const from = { camPos: [camera.position.x, camera.position.y, camera.position.z] };
+      const to = { camPos: [-2, 4, 5] };
+      new TWEEN.Tween(from)
+        .to(to, 1000)
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .onUpdate(() => {
+          camera.position.set(from.camPos[0], from.camPos[1], from.camPos[2]);
+          camera.lookAt(0, 0, 0);
+        })
+        .onComplete(() => {
+          setShowSpeedup(true);
+        })
+        .start();
     }
-  }, [isWheelsRotating, api, camera]);
+  }, [isWheelsRotating, camera]);
 
   // 在 useFrame 中同步 spring 到 camera
   useFrame(() => {
-    if (isWheelsRotating) {
-      const pos = cameraSpring.camPos.get();
-      camera.position.set(pos[0], pos[1], pos[2]);
-      camera.lookAt(0, 0, 0);
-    }
+    // 这里已不需要同步 cameraSpring.camPos
+    // camera.position 已由 tween.js 动画更新，无需额外处理
+    camera.lookAt(0, 0, 0);
   });
 
   React.useEffect(() => {
@@ -138,22 +137,40 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
     }
   });
 
-  // 入场运镜动画
-  const { rotY } = useSpring({
-    rotY: startAnim ? -Math.PI * 8 / 13 : -Math.PI * 3 / 4,
-    from: { rotY: -Math.PI * 3 / 4 },
-    config: { mass: 1.5, tension: 40, friction: 40 },
-    delay: 0,
+  // 新建 tweenGroup 实例
+  const tweenGroup = useRef(new TWEEN.Group()).current;
+
+  // rotY 动画逻辑
+  const tweenRef = useRef<TWEEN.Tween<any> | null>(null);
+
+  useEffect(() => {
+    if (startAnim) {
+      const from = { rotY: groupRef.current?.rotation.y ?? -Math.PI * 3 / 4 };
+      const to = { rotY: -Math.PI * 8 / 13 };
+      tweenRef.current = new TWEEN.Tween(from, tweenGroup)
+        .to(to, 1000)
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .onUpdate(() => {
+          if (groupRef.current) {
+            groupRef.current.rotation.y = from.rotY;
+          }
+        })
+        .start();
+    }
+  }, [startAnim, tweenGroup]);
+
+  useFrame(() => {
+    tweenGroup.update();
   });
 
   return (
     <>
-      <animated.group rotation-y={rotY}>
+      <group ref={groupRef}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
         {!showSpeedup && <StartRoom />}
         {showSpeedup && <Speedup gltf={speedupGltf} />}
         {/* <RectWaterBase waterNormals={waterNormals} color={carColor} startAnim={startAnim} /> */}
-      </animated.group>
+      </group>
       <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />
     </>
   );
