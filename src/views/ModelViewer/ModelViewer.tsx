@@ -70,7 +70,7 @@ const ModelViewer: React.FC = () => {
            <ModelContent isTopView={isTopView} carColor={carColor} startAnim={startAnim} animDone={animDone} />
           <OrbitControls
             target={[0, 0, 0]}
-            maxPolarAngle={1.24}
+            maxPolarAngle={1.35}
             enabled={true}
             enableZoom={false}
             enableRotate={animDone}
