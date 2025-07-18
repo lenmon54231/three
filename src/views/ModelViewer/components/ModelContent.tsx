@@ -187,12 +187,15 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
     cameraTweenGroup.update();
   });
 
+  // 让水面颜色更暗
+  const darkColor = new THREE.Color(carColor).lerp(new THREE.Color('#000'), 0.2).getStyle();
+
   return (
     <>
       <group ref={groupRef}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
         {!showSpeedup && <StartRoom />}
-        {showSpeedup && <RectWaterBase waterNormals={waterNormals} color={carColor} startAnim={startAnim} />}
+        {showSpeedup && <RectWaterBase waterNormals={waterNormals} color={darkColor} startAnim={startAnim} />}
         {showSpeedup && <Speedup gltf={speedupGltf} />}
       </group>
       <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />

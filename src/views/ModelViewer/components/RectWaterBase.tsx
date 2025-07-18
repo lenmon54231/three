@@ -41,11 +41,11 @@ const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, star
         sunDirection: new THREE.Vector3(1, 1, 1),
         sunColor: 0x222233,
         waterColor: 0x181a22,
-        distortionScale: 2.2,
+        distortionScale: 0.1, // 降低反射
         fog: false,
         format: 3001,
         map: gradTex,
-        alpha: 0.98,
+        alpha: 0.9, // 进一步降低透明度
       } as any
     );
   }, [waterNormals]);
