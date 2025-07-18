@@ -43,7 +43,6 @@ function flatModel(scene: THREE.Object3D): THREE.Mesh[] {
 
 interface ModelContentProps {
   isTopView?: boolean;
-  // waterNormals: THREE.Texture; // 已不再使用
   carColor: string;
   startAnim?: boolean;
   animDone?: boolean;
@@ -195,7 +194,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
       <group ref={groupRef}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
         {!showSpeedup && <StartRoom />}
-        {showSpeedup && <RectWaterBase waterNormals={waterNormals} color={darkColor} startAnim={startAnim} />}
+        {showSpeedup && <RectWaterBase waterNormals={waterNormals} color={darkColor} showSpeedup={showSpeedup} />}
         {showSpeedup && <Speedup gltf={speedupGltf} />}
       </group>
       <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />

@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import * as THREE from 'three';
 import { Water } from 'three-stdlib';
-import { animated, useSpring } from '@react-spring/three';
+import * as TWEEN from '@tweenjs/tween.js';
 import { useFrame } from '@react-three/fiber';
 
 interface RectWaterBaseProps {
   waterNormals: THREE.Texture;
   color: string;
-  startAnim?: boolean;
+  showSpeedup?: boolean;
 }
 
 function createRectGradientTexture(size = 512) {
@@ -16,21 +16,14 @@ function createRectGradientTexture(size = 512) {
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
-  // 横向渐变，中心亮且不透明，边缘暗且更透明
-  const gradient = ctx.createLinearGradient(0, size / 2, size * 2, size / 2);
-  gradient.addColorStop(0, 'rgba(0,0,0,0)');
-  gradient.addColorStop(0.15, 'rgba(24,26,34,0.7)');
-  gradient.addColorStop(0.5, 'rgba(58,74,106,1)');
-  gradient.addColorStop(0.85, 'rgba(24,26,34,0.7)');
-  gradient.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = gradient;
+  ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, size * 2, size);
   const texture = new THREE.Texture(canvas);
   texture.needsUpdate = true;
   return texture;
 }
 
-const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, startAnim = false }) => {
+const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, showSpeedup = false }) => {
   // 水面对象
   const planeWater: any = useMemo(() => {
     const gradTex = createRectGradientTexture(512);
@@ -52,39 +45,67 @@ const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, star
     );
   }, [waterNormals]);
 
-  // 颜色渐变动画
-  const { color: waterColorSpring } = useSpring({
-    color,
-    config: { duration: 1000 },
-  });
+  // TWEEN group 实例
+  const tweenGroup = React.useRef(new TWEEN.Group()).current;
 
-  // 同步 spring color 到 planeWater 的 waterColor
+  // 颜色渐变动画（TWEEN）
+  const colorRef = React.useRef(new THREE.Color(color));
+  const prevColorRef = React.useRef(color);
+  React.useEffect(() => {
+    if (prevColorRef.current !== color) {
+      const from = { r: colorRef.current.r, g: colorRef.current.g, b: colorRef.current.b };
+      const toColor = new THREE.Color(color);
+      const to = { r: toColor.r, g: toColor.g, b: toColor.b };
+      new TWEEN.Tween(from, tweenGroup)
+        .to(to, 1000)
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .onUpdate(() => {
+          colorRef.current.setRGB(from.r, from.g, from.b);
+        })
+        .start();
+      prevColorRef.current = color;
+    }
+  }, [color, tweenGroup]);
+
+  // 入场缩放动画（TWEEN）
+  const [scale, setScale] = React.useState(0);
+  const hasAnimated = React.useRef(false);
+  React.useEffect(() => {
+    if (showSpeedup && !hasAnimated.current) {
+      const from = { s: 0 };
+      const to = { s: 10 };
+      new TWEEN.Tween(from, tweenGroup)
+        .to(to, 500)
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .delay(200)
+        .onUpdate(() => setScale(from.s))
+        .start();
+      hasAnimated.current = true;
+    }
+  }, [showSpeedup, tweenGroup]);
+
+  // TWEEN 更新
   useFrame(() => {
+    tweenGroup.update();
+    // 同步 tween color 到 planeWater 的 waterColor
     if (
       planeWater &&
       planeWater.material &&
       planeWater.material.uniforms &&
       planeWater.material.uniforms.waterColor
     ) {
-      planeWater.material.uniforms.waterColor.value.set(waterColorSpring.get());
+      planeWater.material.uniforms.waterColor.value.copy(colorRef.current);
     }
   });
 
-  // 入场缩放动画
-  const rectBaseSpring = useSpring({
-    scale: startAnim ? 5 : 0,
-    config: { tension: 120, friction: 30 },
-    delay: 200,
-  });
-
   return (
-    <animated.group scale={rectBaseSpring.scale}>
+    <group scale={[scale, scale, scale]}>
       <primitive
         object={planeWater}
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, 0, 0]}
       />
-    </animated.group>
+    </group>
   );
 };
 
