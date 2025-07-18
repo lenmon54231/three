@@ -16,11 +16,13 @@ function createRectGradientTexture(size = 512) {
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
-  // 横向渐变，中心亮，边缘暗
+  // 横向渐变，中心亮且不透明，边缘暗且更透明
   const gradient = ctx.createLinearGradient(0, size / 2, size * 2, size / 2);
-  gradient.addColorStop(0, '#181a22');
-  gradient.addColorStop(0.5, '#3a4a6a');
-  gradient.addColorStop(1, '#181a22');
+  gradient.addColorStop(0, 'rgba(0,0,0,0)');
+  gradient.addColorStop(0.15, 'rgba(24,26,34,0.7)');
+  gradient.addColorStop(0.5, 'rgba(58,74,106,1)');
+  gradient.addColorStop(0.85, 'rgba(24,26,34,0.7)');
+  gradient.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, size * 2, size);
   const texture = new THREE.Texture(canvas);
@@ -39,13 +41,13 @@ const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, star
         textureHeight: 1024,
         waterNormals,
         sunDirection: new THREE.Vector3(1, 1, 1),
-        sunColor: 0x222233,
-        waterColor: 0x181a22,
-        distortionScale: 0.1, // 降低反射
+        sunColor: 0xffffff,
+        // waterColor: 0x000000,
+        distortionScale: 0, // 降低反射
         fog: false,
         format: 3001,
         map: gradTex,
-        alpha: 0.9, // 进一步降低透明度
+        alpha: 0, // 进一步降低透明度
       } as any
     );
   }, [waterNormals]);
