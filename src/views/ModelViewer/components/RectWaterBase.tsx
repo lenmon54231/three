@@ -72,7 +72,7 @@ const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, show
   const hasAnimated = React.useRef(false);
   React.useEffect(() => {
     if (showSpeedup && !hasAnimated.current) {
-      const from = { s: 1 };
+      const from = { s: 0 };
       const to = { s: 10 };
       new TWEEN.Tween(from, tweenGroup)
         .to(to, 500)

@@ -69,7 +69,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
       loader.setMeshoptDecoder(MeshoptDecoder);
     }
   );
-  const { camera } = useThree();
+  const { camera, scene } = useThree();
   const wheelMeshesRef = useRef<THREE.Mesh[]>([]);
   const [isWheelsRotating, setIsWheelsRotating] = useState(false);
   const [showSpeedup, setShowSpeedup] = useState(false);
@@ -187,6 +187,16 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   useFrame(() => {
     cameraTweenGroup.update();
   });
+
+  // 动态切换背景色
+  useEffect(() => {
+    if (showSpeedup) {
+      const bgColor = new THREE.Color(carColor).lerp(new THREE.Color('#fff'), 0.2);
+      scene.background = bgColor;
+    } else {
+      scene.background = new THREE.Color('#000');
+    }
+  }, [showSpeedup, carColor, scene]);
 
   return (
     <>
