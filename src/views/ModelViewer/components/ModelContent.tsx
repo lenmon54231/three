@@ -6,13 +6,13 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import hdr from '@/assets/hdr/evening_museum_courtyard_1k.hdr';
 import { TextureLoader } from 'three';
+import waterNormalsImg from '@/assets/image/water/waternormals.jpg';
 import { Water } from 'three-stdlib';
 import { extend } from '@react-three/fiber';
 import StartRoom from './StartRoom';
 import RectWaterBase from './RectWaterBase';
 import Speedup from './Speedup';
 import * as TWEEN from '@tweenjs/tween.js';
-import waterNormalsImg from '@/assets/image/water/waternormals.jpg';
 
 extend({ Water });
 
@@ -93,9 +93,9 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   useEffect(() => {
     if (isWheelsRotating) {
       const from = { camPos: [camera.position.x, camera.position.y, camera.position.z] };
-      const to = { camPos: [4, 2, -6] };
+      const to = { camPos: [4, 2, 4] };
       new TWEEN.Tween(from, wheelsTweenGroup)
-        .to(to, 1000)
+        .to(to, 200)
         .easing(TWEEN.Easing.Quadratic.Out)
         .onUpdate(() => {
           camera.position.set(from.camPos[0], from.camPos[1], from.camPos[2]);
@@ -106,6 +106,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
           camera.up.set(0, 1, 0);
         })
         .start();
+ 
     }
   }, [isWheelsRotating, camera, wheelsTweenGroup]);
 
@@ -186,15 +187,12 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
     cameraTweenGroup.update();
   });
 
-  // 让水面颜色更暗
-  const darkColor = new THREE.Color(carColor).lerp(new THREE.Color('#000'), 0.7).getStyle();
-
   return (
     <>
       <group ref={groupRef}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
         {!showSpeedup && <StartRoom />}
-        {showSpeedup && <RectWaterBase waterNormals={waterNormals} color={darkColor} showSpeedup={showSpeedup} />}
+        {showSpeedup && <RectWaterBase waterNormals={waterNormals} color={carColor} showSpeedup={showSpeedup} />}
         {showSpeedup && <Speedup gltf={speedupGltf} />}
       </group>
       <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />
