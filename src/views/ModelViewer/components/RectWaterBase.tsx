@@ -33,14 +33,14 @@ const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, show
         textureWidth: 1024,
         textureHeight: 1024,
         waterNormals,
-        sunDirection: new THREE.Vector3(1, 1, 1),
-        sunColor: 0xffffff,
+        sunDirection: new THREE.Vector3(0, 0, 0),
+        sunColor: 0x000000,
         // waterColor: 0x000000,
         distortionScale: 0, // 降低反射
         fog: false,
         format: 3001,
         map: gradTex,
-        alpha: 0, // 进一步降低透明度
+        alpha: 1, // 进一步降低透明度
       } as any
     );
   }, [waterNormals]);
@@ -72,7 +72,7 @@ const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, show
   const hasAnimated = React.useRef(false);
   React.useEffect(() => {
     if (showSpeedup && !hasAnimated.current) {
-      const from = { s: 0 };
+      const from = { s: 1 };
       const to = { s: 10 };
       new TWEEN.Tween(from, tweenGroup)
         .to(to, 500)

@@ -187,7 +187,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   });
 
   // 让水面颜色更暗
-  const darkColor = new THREE.Color(carColor).lerp(new THREE.Color('#000'), 0.2).getStyle();
+  const darkColor = new THREE.Color(carColor).lerp(new THREE.Color('#000'), 0.7).getStyle();
 
   return (
     <>
