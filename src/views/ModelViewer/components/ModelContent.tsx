@@ -13,6 +13,7 @@ import StartRoom from './StartRoom';
 import RectWaterBase from './RectWaterBase';
 import Speedup from './Speedup';
 import * as TWEEN from '@tweenjs/tween.js';
+import CameraShake from './CameraShake';
 
 extend({ Water });
 
@@ -193,6 +194,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
         {!showSpeedup && <StartRoom />}
         {showSpeedup && <RectWaterBase waterNormals={waterNormals} color={carColor} showSpeedup={showSpeedup} />}
+        {showSpeedup && <CameraShake />}
         {showSpeedup && <Speedup gltf={speedupGltf} />}
       </group>
       <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />
