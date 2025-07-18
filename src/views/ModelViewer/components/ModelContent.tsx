@@ -73,6 +73,8 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   const wheelMeshesRef = useRef<THREE.Mesh[]>([]);
   const [isWheelsRotating, setIsWheelsRotating] = useState(false);
   const [showSpeedup, setShowSpeedup] = useState(false);
+  const [currentColor, setCurrentColor] = useState(new THREE.Color(carColor));
+  const targetColorRef = useRef(new THREE.Color(carColor));
   const groupRef = useRef<THREE.Group>(null);
   const waterNormals = useLoader(TextureLoader, waterNormalsImg);
 
@@ -115,11 +117,35 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
     wheelsTweenGroup.update();
   });
 
+  // showSpeedup 时每2秒随机切换颜色
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    if (showSpeedup) {
+      timer = setInterval(() => {
+        const randomColor = new THREE.Color('#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'));
+        targetColorRef.current = randomColor;
+      }, 3000);
+    } else {
+      targetColorRef.current = new THREE.Color(carColor);
+      setCurrentColor(new THREE.Color(carColor));
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [showSpeedup, carColor]);
+
+  // 颜色平滑过渡
+  useFrame(() => {
+    if (!currentColor.equals(targetColorRef.current)) {
+      setCurrentColor(prev => prev.clone().lerp(targetColorRef.current, 0.05));
+    }
+  });
+
   React.useEffect(() => {
     const meshes = flatModel(gltf.scene);
     const body = meshes[2] as THREE.Mesh;
     if (body && body.material) {
-      (body.material as THREE.MeshPhysicalMaterial).color = new THREE.Color(carColor);
+      (body.material as THREE.MeshPhysicalMaterial).color = currentColor;
       (body.material as THREE.MeshPhysicalMaterial).needsUpdate = true;
     }
     meshes.forEach((mesh) => {
@@ -130,7 +156,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
     });
     // 只选中名称为 'Wheel001' 和 'Wheel002' 的 mesh
     wheelMeshesRef.current = meshes.filter(mesh => mesh.name === 'Wheel001' || mesh.name === 'Wheel002');
-  }, [gltf, aoMap, carColor]);
+  }, [gltf, aoMap, currentColor]);
 
   // 让 Wheel001 和 Wheel002 绕自身旋转（仅在 isWheelsRotating 为 true 时）
   useFrame((_, delta) => {
@@ -191,19 +217,19 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   // 动态切换背景色
   useEffect(() => {
     if (showSpeedup) {
-      const bgColor = new THREE.Color(carColor).lerp(new THREE.Color('#fff'), 0.2);
+      const bgColor = currentColor.clone().lerp(new THREE.Color('#fff'), 0.2);
       scene.background = bgColor;
     } else {
       scene.background = new THREE.Color('#000');
     }
-  }, [showSpeedup, carColor, scene]);
+  }, [showSpeedup, currentColor, scene]);
 
   return (
     <>
       <group ref={groupRef}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
         {!showSpeedup && <StartRoom />}
-        {showSpeedup && <RectWaterBase waterNormals={waterNormals} color={carColor} showSpeedup={showSpeedup} />}
+        {showSpeedup && <RectWaterBase waterNormals={waterNormals} color={currentColor.getStyle()} showSpeedup={showSpeedup} />}
         {showSpeedup && <CameraShake />}
         {showSpeedup && <Speedup gltf={speedupGltf} />}
       </group>
