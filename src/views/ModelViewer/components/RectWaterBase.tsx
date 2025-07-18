@@ -33,7 +33,7 @@ const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, star
   const planeWater: any = useMemo(() => {
     const gradTex = createRectGradientTexture(512);
     return new (Water as any)(
-      new THREE.PlaneGeometry(5, 2, 128, 128),
+      new THREE.PlaneGeometry(50, 2, 128, 128),
       {
         textureWidth: 1024,
         textureHeight: 1024,
@@ -70,7 +70,7 @@ const RectWaterBase: React.FC<RectWaterBaseProps> = ({ waterNormals, color, star
 
   // 入场缩放动画
   const rectBaseSpring = useSpring({
-    scale: startAnim ? 1 : 0,
+    scale: startAnim ? 5 : 0,
     config: { tension: 120, friction: 30 },
     delay: 200,
   });

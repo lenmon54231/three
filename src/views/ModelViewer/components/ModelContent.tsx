@@ -9,9 +9,10 @@ import { TextureLoader } from 'three';
 import { Water } from 'three-stdlib';
 import { extend } from '@react-three/fiber';
 import StartRoom from './StartRoom';
-// import RectWaterBase from './RectWaterBase';
+import RectWaterBase from './RectWaterBase';
 import Speedup from './Speedup';
 import * as TWEEN from '@tweenjs/tween.js';
+import waterNormalsImg from '@/assets/image/water/waternormals.jpg';
 
 extend({ Water });
 
@@ -73,6 +74,7 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
   const [isWheelsRotating, setIsWheelsRotating] = useState(false);
   const [showSpeedup, setShowSpeedup] = useState(false);
   const groupRef = useRef<THREE.Group>(null);
+  const waterNormals = useLoader(TextureLoader, waterNormalsImg);
 
   // 监听鼠标滚轮下滑事件
   useEffect(() => {
@@ -189,10 +191,9 @@ const ModelContent: React.FC<ModelContentProps> = ({ carColor, startAnim = false
     <>
       <group ref={groupRef}>
         <primitive object={gltf.scene} scale={[1, 1, 1]} />
-        {/* {!showSpeedup && <StartRoom />} */}
-        <StartRoom />
+        {!showSpeedup && <StartRoom />}
+        {showSpeedup && <RectWaterBase waterNormals={waterNormals} color={carColor} startAnim={startAnim} />}
         {showSpeedup && <Speedup gltf={speedupGltf} />}
-        {/* <RectWaterBase waterNormals={waterNormals} color={carColor} startAnim={startAnim} /> */}
       </group>
       <SetEnvironment envMap={envMap} gltfScene={gltf.scene} />
     </>
