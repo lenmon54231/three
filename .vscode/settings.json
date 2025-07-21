@@ -4,7 +4,7 @@
   },
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "prettier.jsxBracketSameLine": true,
+  "prettier.bracketSameLine": true,
   "prettier.semi": false,
   "prettier.singleQuote": true,
   "prettier.trailingComma": "es5",
@@ -24,5 +24,112 @@
   ],
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
-  "files.eol": "\n"
+  "files.eol": "\n",
+  // *******************************
+  // 以下設定僅適用於 User Settings
+  // *******************************
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true,
+    "scminput": true,
+    "yaml": true,
+    "html": true,
+    "powershell": true,
+    "javascript": true,
+    "aspnetcorerazor": true
+  },
+  "chat.editing.confirmEditRequestRemoval": true,
+  "chat.editing.confirmEditRequestRetry": true,
+  "telemetry.telemetryLevel": "off",
+  // ***************************************************
+  // 以下設定適用於 User Settings 或 Workspace Settings
+  // ***************************************************
+  "window.commandCenter": true,
+  "chat.commandCenter.enabled": true,
+  // 目前 gpt-4o-copilot 已經是預設值，但明確設定可確保一致性
+  "github.copilot.editor.enableCodeActions": true,
+  "github.copilot.renameSuggestions.triggerAutomatically": true,
+  "workbench.commandPalette.experimental.askChatLocation": "chatView",
+  "github.copilot.chat.search.semanticTextResults": true,
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "editor.inlineSuggest.edits.showCollapsed": true,
+  // GitHub Copilot Chat
+  "github.copilot.chat.followUps": "always",
+  "github.copilot.chat.localeOverride": "zh-CN",
+  "github.copilot.chat.useProjectTemplates": true,
+  "github.copilot.chat.scopeSelection": true,
+  "chat.detectParticipant.enabled": false,
+  "chat.promptFiles": true,
+  "chat.promptFilesLocations": {
+    ".github/prompts": true
+  },
+  "github.copilot.chat.languageContext.typescript.enabled": true,
+  "github.copilot.chat.agent.thinkingTool": true,
+  // GitHub Copilot Chat - 內嵌聊天 (Inline Chat)
+  "github.copilot.chat.editor.temporalContext.enabled": true,
+  "inlineChat.holdToSpeech": true,
+  "inlineChat.finishOnType": false,
+  // GitHub Copilot Chat - 偵錯相關設定
+  "github.copilot.chat.startDebugging.enabled": true,
+  "github.copilot.chat.reviewSelection.enabled": true,
+  "github.copilot.chat.copilotDebugCommand.enabled": true,
+  "github.copilot.chat.edits.temporalContext.enabled": false,
+  // GitHub Copilot Chat - 測試相關設定
+  "github.copilot.chat.setupTests.enabled": true,
+  "github.copilot.chat.generateTests.codeLens": true,
+  // GitHub Copilot Chat - 自訂提示
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "github.copilot.chat.reviewSelection.instructions": [
+    {
+      "text": "Always response in #zh-CN."
+    },
+    {
+      "file": ".copilot-review-instructions.md"
+    }
+  ],
+  // GitHub Copilot Chat - 自訂 Git Commit 訊息提示
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "# Use Conventional Commits 1.0.0 for commit messages."
+    },
+    {
+      "text": "请一律使用简体中文来描述记录"
+    },
+    {
+      "file": ".copilot-commit-message-instructions.md"
+    }
+  ],
+  // GitHub Copilot Chat - 自訂 Pull Request 描述提示
+  // "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+  //   {
+  //     "text": "请一律使用简体中文来描述记录"
+  //   },
+  //   {
+  //     "file": ".copilot-pull-request-description-instructions.md"
+  //   }
+  // ],
+  // GitHub Copilot Chat Edit
+  "github.copilot.chat.edits.suggestRelatedFilesForTests": true,
+  "github.copilot.chat.edits.suggestRelatedFilesFromGitHistory": true,
+  // GitHub Copilot Chat - Agent Mode
+  "chat.agent.enabled": true,
+  "chat.agent.maxRequests": 100,
+  "github.copilot.chat.agent.runTasks": true,
+  "github.copilot.chat.codesearch.enabled": true,
+  "github.copilot.chat.newWorkspaceCreation.enabled": true,
+  "terminal.integrated.scrollback": 50000, // Agent Mode 建議調高預設 Terminal 的捲軸行數
+  "chat.mcp.enabled": true,
+  "chat.mcp.discovery.enabled": false,
+  // "chat.mcp.discovery.enabled": {
+  //     "claude-desktop": false,
+  //     "windsurf": false,
+  //     "cursor-global": false,
+  //     "cursor-workspace": false
+  // },
+  "mcp": {
+    "servers": {}
+  },
+  // Live Preview
+  "livePreview.autoRefreshPreview": "On Changes to Saved Files",
 }
