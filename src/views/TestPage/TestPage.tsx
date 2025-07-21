@@ -1,75 +1,102 @@
-import React, { useRef, useEffect } from 'react';
-import { Canvas, useLoader, useFrame, extend } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { shaderMaterial } from '@react-three/drei';
+import React, { useRef } from 'react'
+import { Canvas, useFrame, useLoader } from '@react-three/fiber'
+import * as THREE from 'three'
 
-// @ts-expect-error: raw-loader glsl import for shader
-import vertexShader from '@/assets/shaders/speedup.vert';
-import speedupFrag from '@/assets/shaders/speedup.frag.ts';
+import texturePath from '@/assets/texture/ganges_river_pebbles/ganges_river_pebbles_diff_1k.jpg'
 
-const speedupMaterial = shaderMaterial(
-  { uTime: 0, uSpeedFactor: 1.0 },
-  vertexShader,
-  speedupFrag
-);
-extend({ speedupMaterial });
+// 水滴波纹 fragment shader（简化移植，去除部分依赖，适配 three.js）
+const fragmentShader = `
+#define MAX_RADIUS 2
+#define HASHSCALE1 .1031
+#define HASHSCALE3 vec3(.1031, .1030, .0973)
 
-const SpeedupModel: React.FC = () => {
-  const gltf = useLoader(
-    GLTFLoader,
-    '/su7_car/sm_speedup.gltf',
-    loader => {
-      loader.setMeshoptDecoder(MeshoptDecoder);
+float hash12(vec2 p) {
+    vec3 p3  = fract(vec3(p.xyx) * HASHSCALE1);
+    p3 += dot(p3, p3.yzx + 19.19);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+vec2 hash22(vec2 p) {
+    vec3 p3 = fract(vec3(p.xyx) * HASHSCALE3);
+    p3 += dot(p3, p3.yzx+19.19);
+    return fract((p3.xx+p3.yz)*p3.zy);
+}
+
+uniform float uTime;
+uniform sampler2D uTexture;
+varying vec2 vUv;
+
+void main() {
+    float resolution = 10.0;
+    vec2 uv = vUv * resolution;
+    vec2 p0 = floor(uv);
+    vec2 circles = vec2(0.0);
+    for (int j = -MAX_RADIUS; j <= MAX_RADIUS; ++j) {
+        for (int i = -MAX_RADIUS; i <= MAX_RADIUS; ++i) {
+            vec2 pi = p0 + vec2(float(i), float(j));
+            vec2 hsh = pi;
+            vec2 p = pi + hash22(hsh);
+            float t = fract(0.3 * uTime + hash12(hsh));
+            vec2 v = p - uv;
+            float d = length(v) - (float(MAX_RADIUS) + 1.0) * t;
+            float h = 1e-3;
+            float d1 = d - h;
+            float d2 = d + h;
+            float p1 = sin(31.0 * d1) * smoothstep(-0.6, -0.3, d1) * smoothstep(0.0, -0.3, d1);
+            float p2 = sin(31.0 * d2) * smoothstep(-0.6, -0.3, d2) * smoothstep(0.0, -0.3, d2);
+            circles += 0.5 * normalize(v) * ((p2 - p1) / (2.0 * h) * (1.0 - t) * (1.0 - t));
+        }
     }
-  );
-  const materialRef = useRef<any>(null);
+    circles /= float((MAX_RADIUS*2+1)*(MAX_RADIUS*2+1));
+    float shade = 0.5 + 0.5 * circles.x;
+    vec3 texColor = texture2D(uTexture, vUv).rgb;
+    gl_FragColor = vec4(texColor * shade, 1.0);
+}
+`
 
-  // 动画驱动 uTime
-  useFrame((_, delta) => {
+const vertexShader = `
+varying vec2 vUv;
+void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`
+
+const RipplePlane: React.FC = () => {
+  const meshRef = useRef<THREE.Mesh>(null)
+  const materialRef = useRef<THREE.ShaderMaterial>(null)
+  const texture = useLoader(THREE.TextureLoader, texturePath)
+
+  useFrame(({ clock }) => {
     if (materialRef.current) {
-      materialRef.current.uTime += delta;
-      materialRef.current.uSpeedFactor = 1.0;
+      materialRef.current.uniforms.uTime.value = clock.getElapsedTime()
     }
-  });
-
-  // 替换所有 mesh 的材质
-  useEffect(() => {
-    gltf.scene.traverse((child: any) => {
-      if (child.isMesh) {
-        child.material = materialRef.current;
-      }
-    });
-  }, [gltf]);
+  })
 
   return (
-    <>
-      <primitive object={gltf.scene} />
-      {/* @ts-expect-error speedupMaterial is a custom JSX tag for three-fiber material */}
-      <speedupMaterial ref={materialRef} uSpeedFactor={1.0} side={THREE.DoubleSide} transparent />
-    </>
-  );
-};
+    <mesh ref={meshRef} scale={[10, 10, 1]}>
+      <planeGeometry args={[1, 1, 1, 1]} />
+      <shaderMaterial
+        ref={materialRef}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+        uniforms={{
+          uTime: { value: 0 },
+          uTexture: { value: texture },
+        }}
+      />
+    </mesh>
+  )
+}
 
 const TestPage: React.FC = () => {
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <Canvas
-        camera={{ position: [0, 2, 16], fov: 50 }}
-        style={{ background: '#000', width: '100vw', height: '100vh' }}
-        onCreated={({ scene }) => {
-          scene.background = new THREE.Color('#000');
-        }}
-      >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow />
-        <SpeedupModel />
-        <OrbitControls />
+    <div style={{ width: '100vw', height: '100vh', background: '#000' }}>
+      <Canvas camera={{ position: [0, 0, 15], fov: 50 }}>
+        <RipplePlane />
       </Canvas>
     </div>
-  );
-};
+  )
+}
 
-export default TestPage;
+export default TestPage
