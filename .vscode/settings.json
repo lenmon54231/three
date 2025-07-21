@@ -1,24 +1,28 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.associations": {
+    "*.tsx": "typescriptreact"
+  },
   "editor.formatOnSave": true,
-  "prettier.printWidth": 80,
-  "prettier.tabWidth": 2,
-  "prettier.useTabs": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.jsxBracketSameLine": true,
+  "prettier.semi": false,
   "prettier.singleQuote": true,
   "prettier.trailingComma": "es5",
-  "prettier.bracketSpacing": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
   "eslint.validate": [
     "javascript",
     "javascriptreact",
     "typescript",
     "typescriptreact"
   ],
-  "eslint.format.enable": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
-  },
-  "cSpell.words": [
-    "Qwer"
-  ]
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "files.eol": "\n"
 }
