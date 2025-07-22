@@ -25,7 +25,7 @@ uniform sampler2D uTexture;
 varying vec2 vUv;
 
 void main() {
-    float resolution = 10.0;
+    float resolution = 10.0 * 0.2;
     vec2 uv = vUv * resolution;
     vec2 p0 = floor(uv);
     vec2 circles = vec2(0.0);
@@ -49,7 +49,8 @@ void main() {
 
     float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract(0.05 * uTime + 0.5)*2.-1.)));
     vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
-    vec3 texColor = texture2D(uTexture, vUv / resolution - intensity * n.xy).rgb  + 5.0 * pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
+
+    vec3 texColor = texture2D(uTexture, vUv - intensity * n.xy).rgb  + 5.0 * pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
     gl_FragColor = vec4(texColor, 1.0);
 }
 `
