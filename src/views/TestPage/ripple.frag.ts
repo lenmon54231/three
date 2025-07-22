@@ -25,7 +25,7 @@ uniform sampler2D uTexture;
 varying vec2 vUv;
 
 void main() {
-    float resolution = 10.0 * 0.2;
+    float resolution = 10.0 * 0.5;
     vec2 uv = vUv * resolution;
     vec2 p0 = floor(uv);
     vec2 circles = vec2(0.0);
@@ -40,8 +40,8 @@ void main() {
             float h = 1e-3;
             float d1 = d - h;
             float d2 = d + h;
-            float p1 = sin(31.0 * d1) * smoothstep(-0.6, -0.3, d1) * smoothstep(0.0, -0.3, d1);
-            float p2 = sin(31.0 * d2) * smoothstep(-0.6, -0.3, d2) * smoothstep(0.0, -0.3, d2);
+            float p1 = sin(31.*d1) * smoothstep(-0.6, -0.3, d1) * smoothstep(0., -0.3, d1);
+            float p2 = sin(31.*d2) * smoothstep(-0.6, -0.3, d2) * smoothstep(0., -0.3, d2);
             circles += 0.5 * normalize(v) * ((p2 - p1) / (2.0 * h) * (1.0 - t) * (1.0 - t));
         }
     }
@@ -50,7 +50,7 @@ void main() {
     float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract(0.05 * uTime + 0.5)*2.-1.)));
     vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
 
-    vec3 texColor = texture2D(uTexture, vUv - intensity * n.xy).rgb  + 5.0 * pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
+    vec3 texColor = texture2D(uTexture, uv / resolution - intensity * n.xy).rgb  + 5.0 * pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
     gl_FragColor = vec4(texColor, 1.0);
 }
 `
