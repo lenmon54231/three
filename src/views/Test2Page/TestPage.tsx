@@ -3,8 +3,8 @@ import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import texturePath from '@/assets/texture/light_rock/light_rock.jpg'
 
-import frag from './ripple.frag.ts'
-// import frag from './origin_ripple.ts'
+// import frag from './ripple.frag.ts'
+import frag from './origin_ripple.ts'
 
 import vert from './ripple.vert.ts'
 
