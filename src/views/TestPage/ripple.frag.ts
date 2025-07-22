@@ -1,7 +1,7 @@
 
 
 const frag = `
-#define MAX_RADIUS 1
+#define MAX_RADIUS 2
 
 #define DOUBLE_HASH 0
 
@@ -25,7 +25,7 @@ uniform sampler2D uTexture;
 varying vec2 vUv;
 
 void main() {
-    float resolution = 10.0 * 0.5;
+    float resolution = 10.0 * 0.2;
     vec2 uv = vUv * resolution;
     vec2 p0 = floor(uv);
     vec2 circles = vec2(0.0);
