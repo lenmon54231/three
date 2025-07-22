@@ -46,9 +46,11 @@ void main() {
         }
     }
     circles /= float((MAX_RADIUS*2+1)*(MAX_RADIUS*2+1));
-    float shade = 0.5 + 0.5 * circles.x;
-    vec3 texColor = texture2D(uTexture, vUv).rgb;
-    gl_FragColor = vec4(texColor * shade, 1.0);
+
+    float intensity = mix(0.01, 0.15, smoothstep(0.1, 0.6, abs(fract(0.05 * uTime + 0.5)*2.-1.)));
+    vec3 n = vec3(circles, sqrt(1. - dot(circles, circles)));
+    vec3 texColor = texture2D(uTexture, vUv / resolution - intensity * n.xy).rgb  + 5.0 * pow(clamp(dot(n, normalize(vec3(1., 0.7, 0.5))), 0., 1.), 6.);
+    gl_FragColor = vec4(texColor, 1.0);
 }
 `
 
